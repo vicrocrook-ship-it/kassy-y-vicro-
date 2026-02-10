@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | TERMINAL v27.5</title>
+    <title>VICRO & KASSY | OMEGA CLOUD v28.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -15,7 +15,7 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
 
-        /* Escáner */
+        /* Biometría */
         #biometric-overlay { position: fixed; inset: 0; z-index: 3000; background: #000; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .scanner-bar { width: 100%; height: 4px; background: var(--primary); position: absolute; top: 0; box-shadow: 0 0 20px var(--primary); animation: scanLine 2s linear infinite; }
         @keyframes scanLine { 0% { top: 0%; } 50% { top: 100%; } 100% { top: 0%; } }
@@ -26,21 +26,20 @@
         .hacker-input { width: 100%; background: transparent; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
         .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
 
-        /* App Layout */
+        /* App */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 15px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--dim); padding-bottom: 10px; margin-bottom: 10px; font-size: 0.7rem; }
-        
         .content-grid { display: grid; grid-template-columns: 1fr; gap: 15px; overflow-y: auto; }
         @media (min-width: 850px) { .content-grid { grid-template-columns: 1.2fr 1fr; height: 80vh; } }
 
         .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 5px; overflow-y: auto; }
         .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
-        
-        .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; align-items: center; }
-        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; border: 1px solid var(--red); padding: 2px 5px; margin-left: 10px; }
+        .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
+        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; border: 1px solid var(--red); padding: 2px 5px; }
 
         #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         audio { height: 35px; width: 100%; filter: invert(1) hue-rotate(45deg); }
+        .sync-status { font-size: 0.6rem; color: var(--gold); margin-top: 5px; }
     </style>
 </head>
 <body id="body-tag">
@@ -48,18 +47,17 @@
 
     <div id="biometric-overlay">
         <div class="scanner-bar"></div>
-        <div id="bio-msg" style="letter-spacing: 5px;">SINC_NUBE_ACTIVA...</div>
+        <div id="bio-msg" style="letter-spacing: 5px;">SINCRONIZANDO_NUBE_OMEGA...</div>
     </div>
 
     <div id="login-page">
         <div class="login-card">
-            <h2 style="letter-spacing: 5px; font-size: 0.8rem;">VORTEX_CORE_v27.5</h2>
+            <h2 style="letter-spacing: 5px; font-size: 0.8rem;">VORTEX_CLOUD_v28</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            <button class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
-            <div style="margin-top:15px; display:flex; justify-content: space-between;">
-                <button onclick="transferirDatos()" style="background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.5rem;">[SINCRONIZAR]</button>
-                <button onclick="configAcceso()" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:0.5rem;">[CAMBIAR_PASS]</button>
+            <button class="btn-hack" onclick="iniciarEscaneo()">ACCEDER Y SINCRONIZAR</button>
+            <div style="margin-top:15px;">
+                <button onclick="configAcceso()" style="background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.5rem;">[CAMBIAR_CREDENCIALES_GLOBALES]</button>
             </div>
         </div>
     </div>
@@ -67,13 +65,14 @@
     <div id="main-app">
         <div class="header">
             <span id="display-user"></span>
-            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding: 2px 10px; cursor:pointer;">LOGOUT</button>
+            <span id="sync-indicator" style="color:var(--primary)">● CLOUD_SYNC_OK</span>
+            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding: 2px 10px; cursor:pointer;">CERRAR</button>
         </div>
 
         <div id="player-vicro">
             <audio controls id="main-audio"></audio>
             <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); width: 100%; margin-top:5px; border:1px solid var(--dim);">
-                <option value="">-- SELECCIONAR MÚSICA --</option>
+                <option value="">-- MÚSICA --</option>
                 <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
                 <option value="papasito.mp3">Papasito</option>
                 <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
@@ -81,52 +80,84 @@
             </select>
         </div>
 
-        <div class="content-grid" id="main-grid">
+        <div class="content-grid">
+            <div class="panel" id="panel-controls"></div>
             <div class="panel">
-                <div id="panel-controls"></div>
-            </div>
-            <div class="panel">
-                <small>[ HISTORIAL_DE_MOVIMIENTOS ]</small>
+                <small>[ HISTORIAL_GLOBAL ]</small>
                 <div id="panel-logs"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const DB_KEY = 'vicro_cloud_db_v27';
-        const AUTH_KEY = 'vicro_auth_db_v27';
-        
-        let auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {
-            vicro: { user: "vicrocrook", pass: "soyelmaster" },
-            kassy: { user: "kassy10", pass: "ojitosbonitos" }
-        };
+        // CONFIGURACIÓN JSONBIN (TUS LLAVES)
+        const BIN_ID = '698bb9a743b1c97be975254f';
+        const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
 
-        let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
-            vicro_airtm: { saldo: 2000, logs: [] },
-            vicro_cap: { saldo: 100000, logs: [] },
-            kassy_caja: { saldo: 0, logs: [] }
+        let db = {
+            auth: {
+                vicro: { user: "vicrocrook", pass: "soyelmaster" },
+                kassy: { user: "kassy10", pass: "ojitosbonitos" }
+            },
+            data: {
+                vicro_airtm: { saldo: 2000, logs: [] },
+                vicro_cap: { saldo: 100000, logs: [] },
+                kassy_caja: { saldo: 0, logs: [] }
+            }
         };
 
         let currentUser = "";
 
-        function iniciarEscaneo() {
+        // --- FUNCIONES NUBE ---
+        async function syncCloud(push = false) {
+            document.getElementById('sync-indicator').style.color = 'orange';
+            document.getElementById('sync-indicator').innerText = '● SYNCING...';
+            
+            try {
+                if (push) {
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+                        body: JSON.stringify(db)
+                    });
+                } else {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                        headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    });
+                    const cloudData = await res.json();
+                    if(cloudData.auth) db = cloudData;
+                }
+                document.getElementById('sync-indicator').style.color = '#00ff41';
+                document.getElementById('sync-indicator').innerText = '● CLOUD_SYNC_OK';
+            } catch (e) {
+                document.getElementById('sync-indicator').style.color = 'red';
+                document.getElementById('sync-indicator').innerText = '● SYNC_ERROR';
+            }
+        }
+
+        async function iniciarEscaneo() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
 
-            if((u === auth.vicro.user && p === auth.vicro.pass) || (u === auth.kassy.user && p === auth.kassy.pass)) {
-                currentUser = (u === auth.vicro.user) ? "vicro" : "kassy";
-                document.getElementById('biometric-overlay').style.display = 'flex';
+            document.getElementById('biometric-overlay').style.display = 'flex';
+            await syncCloud(); // Baja los datos más recientes antes de validar
+
+            if((u === db.auth.vicro.user && p === db.auth.vicro.pass) || (u === db.auth.kassy.user && p === db.auth.kassy.pass)) {
+                currentUser = (u === db.auth.vicro.user) ? "vicro" : "kassy";
                 setTimeout(() => {
                     document.getElementById('login-page').style.display = 'none';
                     document.getElementById('biometric-overlay').style.display = 'none';
                     showApp();
                 }, 1500);
-            } else { alert("ACCESO DENEGADO"); }
+            } else { 
+                alert("DATOS INCORRECTOS O ERROR DE NUBE"); 
+                document.getElementById('biometric-overlay').style.display = 'none';
+            }
         }
 
         function showApp() {
             document.getElementById('main-app').style.display = 'flex';
-            document.getElementById('display-user').innerText = "OPERADOR: " + currentUser.toUpperCase();
+            document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
             if(currentUser === "kassy") document.body.classList.add('kassy-mode');
             updateUI();
         }
@@ -134,13 +165,12 @@
         function updateUI() {
             const controls = document.getElementById('panel-controls');
             controls.innerHTML = "";
-            
             if(currentUser === "vicro") {
                 renderNodo(controls, "vicro_airtm", "AIRTM_NODE", "var(--blue)");
                 renderNodo(controls, "vicro_cap", "RESERVA_CAPITAL", "var(--primary)");
                 renderLogs('vicro_airtm');
             } else {
-                renderNodo(controls, "kassy_caja", "MI_CAJA_MÁGICA ✨", "var(--pink)");
+                renderNodo(controls, "kassy_caja", "CAJA_MÁGICA ✨", "var(--pink)");
                 renderLogs('kassy_caja');
             }
         }
@@ -149,78 +179,63 @@
             parent.innerHTML += `
                 <div style="margin-bottom: 30px;">
                     <small style="color:${color}">[ ${title} ]</small>
-                    <div class="amount" style="color:${color}" onclick="ajustarSaldo('${id}')">$${db[id].saldo.toLocaleString()}</div>
-                    <input type="text" id="c-${id}" class="hacker-input" placeholder="DETALLE">
+                    <div class="amount" style="color:${color}" onclick="ajustarSaldo('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
+                    <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
                     <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO $">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                         <button class="btn-hack" style="background:${color}; color:black;" onclick="registrar('${id}', 'INGRESO')">DEPÓSITO</button>
                         <button class="btn-hack" style="background:var(--red); color:white;" onclick="registrar('${id}', 'GASTO')">GASTO</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         }
 
-        function registrar(sec, tipo) {
+        async function registrar(sec, tipo) {
             const det = document.getElementById(`c-${sec}`).value;
             const mon = parseFloat(document.getElementById(`m-${sec}`).value);
             if(!det || isNaN(mon)) return;
+            db.data[sec].saldo += (tipo === 'INGRESO' ? mon : -mon);
+            db.data[sec].logs.push({ id: Date.now(), concepto: det.toUpperCase(), monto: mon, tipo });
+            updateUI();
+            await syncCloud(true); // Sube a la nube
+        }
 
-            db[sec].saldo += (tipo === 'INGRESO' ? mon : -mon);
-            db[sec].logs.push({ id: Date.now(), concepto: det.toUpperCase(), monto: mon, tipo });
-            save();
+        async function eliminar(sec, id) {
+            if(prompt("PASS (2026):") === "2026") {
+                db.data[sec].logs = db.data[sec].logs.filter(l => l.id !== id);
+                updateUI();
+                await syncCloud(true);
+            }
+        }
+
+        async function ajustarSaldo(sec) {
+            let v = prompt("VALOR MANUAL:", db.data[sec].saldo);
+            if(v !== null && !isNaN(v)) {
+                db.data[sec].saldo = parseFloat(v);
+                updateUI();
+                await syncCloud(true);
+            }
+        }
+
+        async function configAcceso() {
+            let target = prompt("¿Cambiar a quién? (vicro / kassy)").toLowerCase();
+            if(db.auth[target] && prompt("Master Key:") === "2026") {
+                db.auth[target].user = prompt("Nuevo Usuario:", db.auth[target].user);
+                db.auth[target].pass = prompt("Nuevo Password:", db.auth[target].pass);
+                await syncCloud(true);
+                alert("CREDENCIALES ACTUALIZADAS EN LA NUBE");
+            }
         }
 
         function renderLogs(sec) {
             const cont = document.getElementById('panel-logs');
             cont.innerHTML = "";
-            [...db[sec].logs].reverse().forEach(l => {
-                cont.innerHTML += `
-                    <div class="log-item">
-                        <div><b>${l.concepto}</b><br><small>${l.tipo}</small></div>
-                        <div>$${l.monto.toLocaleString()} <span class="del-btn" onclick="eliminar('${sec}', ${l.id})">X</span></div>
-                    </div>
-                `;
+            [...db.data[sec].logs].reverse().forEach(l => {
+                cont.innerHTML += `<div class="log-item">
+                    <div><b>${l.concepto}</b><br><small>${l.tipo}</small></div>
+                    <div>$${l.monto.toLocaleString()} <span class="del-btn" onclick="eliminar('${sec}', ${l.id})">X</span></div>
+                </div>`;
             });
         }
-
-        function eliminar(sec, id) {
-            if(prompt("PASSWORD DE SEGURIDAD (2026):") === "2026") {
-                db[sec].logs = db[sec].logs.filter(l => l.id !== id);
-                save();
-            }
-        }
-
-        function ajustarSaldo(sec) {
-            let v = prompt("ESTABLECER SALDO MANUAL:", db[sec].saldo);
-            if(v !== null && !isNaN(v)) { db[sec].saldo = parseFloat(v); save(); }
-        }
-
-        function configAcceso() {
-            let target = prompt("¿Cambiar a quién? (vicro / kassy)").toLowerCase();
-            if(auth[target] && prompt("Master Key:") === "2026") {
-                auth[target].user = prompt("Nuevo Usuario:", auth[target].user);
-                auth[target].pass = prompt("Nuevo Password:", auth[target].pass);
-                localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-                alert("ACTUALIZADO");
-            }
-        }
-
-        function transferirDatos() {
-            let mode = prompt("1: Generar Código para enviar\n2: Pegar Código recibido");
-            if(mode === "1") {
-                alert("COPIA ESTE CÓDIGO:");
-                prompt("CÓDIGO:", btoa(JSON.stringify(db)));
-            } else if(mode === "2") {
-                let code = prompt("PEGA EL CÓDIGO AQUÍ:");
-                if(code) {
-                    db = JSON.parse(atob(code));
-                    save();
-                    alert("DATOS SINCRONIZADOS");
-                }
-            }
-        }
-
-        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); updateUI(); }
 
         function changeTrack() {
             const player = document.getElementById('main-audio');
@@ -228,7 +243,7 @@
             if(player.src) player.play();
         }
 
-        // Animación Fondo
+        // Animación Fondo Estelar
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.onresize = resize; resize();
@@ -248,5 +263,4 @@
     </script>
 </body>
 </html>
-
 
