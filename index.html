@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | OMEGA CLOUD v28.0</title>
+    <title>VICRO & KASSY | OMEGA CLOUD v28.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
@@ -39,7 +39,6 @@
 
         #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         audio { height: 35px; width: 100%; filter: invert(1) hue-rotate(45deg); }
-        .sync-status { font-size: 0.6rem; color: var(--gold); margin-top: 5px; }
     </style>
 </head>
 <body id="body-tag">
@@ -70,14 +69,13 @@
         </div>
 
         <div id="player-vicro">
-            <audio controls id="main-audio"></audio>
-            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); width: 100%; margin-top:5px; border:1px solid var(--dim);">
-                <option value="">-- MÚSICA --</option>
-                <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
-                <option value="papasito.mp3">Papasito</option>
-                <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
-                <option value="titimepregunto.mp3">Tití Me Preguntó</option>
-            </select>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); flex-grow: 1; border:1px solid var(--dim); padding: 5px;">
+                    <option value="">-- SELECCIONAR MÚSICA --</option>
+                </select>
+                <button onclick="addMusicPrompt()" style="background:var(--gold); border:none; padding: 5px 10px; cursor:pointer; font-weight:bold;">+ ADD</button>
+            </div>
+            <audio controls id="main-audio" style="margin-top:10px;"></audio>
         </div>
 
         <div class="content-grid">
@@ -90,10 +88,10 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN JSONBIN (TUS LLAVES)
         const BIN_ID = '698bb9a743b1c97be975254f';
         const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
 
+        // Base de datos extendida con soporte para música
         let db = {
             auth: {
                 vicro: { user: "vicrocrook", pass: "soyelmaster" },
@@ -103,15 +101,21 @@
                 vicro_airtm: { saldo: 2000, logs: [] },
                 vicro_cap: { saldo: 100000, logs: [] },
                 kassy_caja: { saldo: 0, logs: [] }
-            }
+            },
+            playlist: [
+                { name: "Si Antes Te Hubiera Conocido", file: "antestehubieraconocido.mp3" },
+                { name: "Papasito", file: "papasito.mp3" },
+                { name: "Una Noche en Medellín", file: "unanochemedellin.mp3" },
+                { name: "Tití Me Preguntó", file: "titimepregunto.mp3" }
+            ]
         };
 
         let currentUser = "";
 
-        // --- FUNCIONES NUBE ---
         async function syncCloud(push = false) {
-            document.getElementById('sync-indicator').style.color = 'orange';
-            document.getElementById('sync-indicator').innerText = '● SYNCING...';
+            const indicator = document.getElementById('sync-indicator');
+            indicator.style.color = 'orange';
+            indicator.innerText = '● SYNCING...';
             
             try {
                 if (push) {
@@ -125,22 +129,50 @@
                         headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
                     });
                     const cloudData = await res.json();
-                    if(cloudData.auth) db = cloudData;
+                    if(cloudData.auth) {
+                        db = cloudData;
+                        // Asegurar que la playlist exista si los datos son antiguos
+                        if(!db.playlist) db.playlist = [];
+                    }
                 }
-                document.getElementById('sync-indicator').style.color = '#00ff41';
-                document.getElementById('sync-indicator').innerText = '● CLOUD_SYNC_OK';
+                indicator.style.color = '#00ff41';
+                indicator.innerText = '● CLOUD_SYNC_OK';
+                updatePlaylistUI();
             } catch (e) {
-                document.getElementById('sync-indicator').style.color = 'red';
-                document.getElementById('sync-indicator').innerText = '● SYNC_ERROR';
+                indicator.style.color = 'red';
+                indicator.innerText = '● SYNC_ERROR';
+            }
+        }
+
+        function updatePlaylistUI() {
+            const list = document.getElementById('track-list');
+            const currentVal = list.value;
+            list.innerHTML = '<option value="">-- SELECCIONAR MÚSICA --</option>';
+            db.playlist.forEach(track => {
+                const opt = document.createElement('option');
+                opt.value = track.file;
+                opt.textContent = track.name;
+                list.appendChild(opt);
+            });
+            list.value = currentVal;
+        }
+
+        async function addMusicPrompt() {
+            const name = prompt("Nombre de la canción:");
+            const file = prompt("Nombre del archivo (ej: cancion.mp3):");
+            if(name && file) {
+                db.playlist.push({ name, file });
+                await syncCloud(true);
+                alert("Música sincronizada con éxito");
             }
         }
 
         async function iniciarEscaneo() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
-
             document.getElementById('biometric-overlay').style.display = 'flex';
-            await syncCloud(); // Baja los datos más recientes antes de validar
+            
+            await syncCloud();
 
             if((u === db.auth.vicro.user && p === db.auth.vicro.pass) || (u === db.auth.kassy.user && p === db.auth.kassy.pass)) {
                 currentUser = (u === db.auth.vicro.user) ? "vicro" : "kassy";
@@ -150,7 +182,7 @@
                     showApp();
                 }, 1500);
             } else { 
-                alert("DATOS INCORRECTOS O ERROR DE NUBE"); 
+                alert("DATOS INCORRECTOS"); 
                 document.getElementById('biometric-overlay').style.display = 'none';
             }
         }
@@ -196,34 +228,7 @@
             db.data[sec].saldo += (tipo === 'INGRESO' ? mon : -mon);
             db.data[sec].logs.push({ id: Date.now(), concepto: det.toUpperCase(), monto: mon, tipo });
             updateUI();
-            await syncCloud(true); // Sube a la nube
-        }
-
-        async function eliminar(sec, id) {
-            if(prompt("PASS (2026):") === "2026") {
-                db.data[sec].logs = db.data[sec].logs.filter(l => l.id !== id);
-                updateUI();
-                await syncCloud(true);
-            }
-        }
-
-        async function ajustarSaldo(sec) {
-            let v = prompt("VALOR MANUAL:", db.data[sec].saldo);
-            if(v !== null && !isNaN(v)) {
-                db.data[sec].saldo = parseFloat(v);
-                updateUI();
-                await syncCloud(true);
-            }
-        }
-
-        async function configAcceso() {
-            let target = prompt("¿Cambiar a quién? (vicro / kassy)").toLowerCase();
-            if(db.auth[target] && prompt("Master Key:") === "2026") {
-                db.auth[target].user = prompt("Nuevo Usuario:", db.auth[target].user);
-                db.auth[target].pass = prompt("Nuevo Password:", db.auth[target].pass);
-                await syncCloud(true);
-                alert("CREDENCIALES ACTUALIZADAS EN LA NUBE");
-            }
+            await syncCloud(true);
         }
 
         function renderLogs(sec) {
@@ -243,7 +248,7 @@
             if(player.src) player.play();
         }
 
-        // Animación Fondo Estelar
+        // Fondo estelar
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.onresize = resize; resize();
