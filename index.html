@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | V22.0</title>
+    <title>VICRO & KASSY | V22.5</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -22,7 +22,7 @@
         .hacker-input { width: 100%; background: #000; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
         .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
 
-        /* App */
+        /* App Layout */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--dim); padding-bottom: 10px; margin-bottom: 15px; }
         .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
@@ -38,9 +38,9 @@
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
         .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; }
         
-        /* Reproductor Nativo */
-        #player-vicro { background: #111; border: 1px solid var(--dim); padding: 10px; border-radius: 5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        audio { height: 30px; filter: invert(100%) hue-rotate(180deg) brightness(1.5); flex-grow: 1; min-width: 200px; }
+        /* Reproductor Estilo Radio */
+        #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
+        audio { height: 35px; width: 100%; filter: invert(1) hue-rotate(45deg); }
     </style>
 </head>
 <body id="body-tag">
@@ -48,31 +48,31 @@
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="log-title" style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA_V22</h2>
+            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">MASTER_AUTH_V22.5</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            <button class="btn-hack" onclick="autenticar()">INICIAR_SESIÓN</button>
-            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.6rem;" onclick="configAcceso()">CONFIGURAR_ACCESO</button>
+            <button class="btn-hack" onclick="autenticar()">ACCEDER</button>
+            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.6rem;" onclick="configAcceso()">CAMBIAR_PASS</button>
         </div>
     </div>
 
     <div id="main-app">
         <div id="player-vicro">
-            <small style="font-size: 0.6rem; color: var(--gold)">🐎 JOAN SEBASTIAN:</small>
-            <audio controls id="main-audio">
-                <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-            </audio>
-            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.6rem; border:1px solid var(--dim); padding: 5px;">
-                <option value="">-- Seleccionar Éxito --</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">Mix: Tatuajes / Secreto de Amor</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3">Mix: Rumores / Sentimental</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3">Mix: Lobo Domesticado</option>
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">📻 SELECCIONE UN ÉXITO DEL REY</small>
+            </div>
+            <audio controls id="main-audio"></audio>
+            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); padding: 5px; margin-top:5px;">
+                <option value="">-- Elige una canción --</option>
+                <option value="https://www.bensound.com/bensound-music/bensound-acousticbreeze.mp3">Mix 01: Tatuajes / Sentimental</option>
+                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">Mix 02: Secreto de Amor</option>
+                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3">Mix 03: Lobo Domesticado</option>
             </select>
         </div>
 
         <div class="header">
             <div style="font-size:0.6rem; color:#ffcc00">
-                BTC: <span id="btc-price">...</span> | <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer;">EXCEL_BACKUP</button>
+                BTC: <span id="btc-price">...</span> | <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer; font-size:0.6rem;">BAJAR_EXCEL</button>
             </div>
             <button class="btn-hack" style="width: auto; padding: 5px 15px; font-size: 0.6rem; background: var(--red); color: white;" onclick="location.reload()">LOGOUT</button>
         </div>
@@ -80,7 +80,7 @@
         <nav class="tabs">
             <button id="btn-v-airtm" class="tab-btn active vicro-only" onclick="switchTab(this, 'sec-vicro-airtm')">AIRTM_NODO</button>
             <button id="btn-v-cap" class="tab-btn vicro-only" onclick="switchTab(this, 'sec-vicro-cap')">RESERVA_CAPITAL</button>
-            <button id="btn-k-caja" class="tab-btn active kassy-only" style="display:none" onclick="switchTab(this, 'sec-kassy-caja')">CAJA_MÁGICA ✨</button>
+            <button id="btn-k-caja" class="tab-btn active kassy-only" style="display:none" onclick="switchTab(this, 'sec-kassy-caja')">MI_CAJA_ROSA ✨</button>
         </nav>
 
         <div id="sec-vicro-airtm" class="content-section active vicro-only">
@@ -88,7 +88,7 @@
                 <small style="color:var(--blue);">[ AIRTM_OPERATIVO ]</small>
                 <div class="amount" id="val-airtm" style="color:var(--blue);" onclick="ajustarSaldo('vicro_airtm')">$0.00</div>
                 <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE">
-                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO $">
+                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO USD">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn-hack" style="background:var(--blue); color:black;" onclick="regCajero('INGRESO')">DEPÓSITO</button>
                     <button class="btn-hack" style="background:var(--red); color:white;" onclick="regCajero('GASTO')">RETIRO</button>
@@ -99,7 +99,7 @@
 
         <div id="sec-vicro-cap" class="content-section vicro-only">
             <div class="panel">
-                <small>[ RESERVA_100K ]</small>
+                <small>[ RESERVA_ESTÁTICA ]</small>
                 <div class="amount" id="val-vicro-cap" onclick="ajustarSaldo('vicro_cap')">$0.00</div>
                 <input type="text" id="c-v-cap" class="hacker-input" placeholder="CONCEPTO">
                 <input type="number" id="m-v-cap" class="hacker-input" placeholder="MONTO $">
@@ -113,9 +113,9 @@
 
         <div id="sec-kassy-caja" class="content-section kassy-only">
             <div class="panel">
-                <small style="color:var(--pink);">✨ [ DINERO_KASSY ] ✨</small>
+                <small style="color:var(--pink);">✨ [ CAJA_KASSY ] ✨</small>
                 <div class="amount" id="val-kassy-caja" style="color:var(--pink);" onclick="ajustarSaldo('kassy_caja')">$0.00</div>
-                <input type="text" id="c-k-caja" class="hacker-input" placeholder="DETALLE">
+                <input type="text" id="c-k-caja" class="hacker-input" placeholder="¿EN QUÉ GASTAMOS?">
                 <input type="number" id="m-k-caja" class="hacker-input" placeholder="MONTO $">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn-hack" style="background:var(--pink); color:white;" onclick="regKassyCaja('INGRESO')">AÑADIR</button>
@@ -127,10 +127,10 @@
     </div>
 
     <script>
-        const DB_KEY = 'vicro_v22_db';
-        const AUTH_KEY = 'vicro_auth_config';
+        const DB_KEY = 'vicro_final_v225';
+        const AUTH_KEY = 'vicro_auth_v225';
         
-        // Cargar o Inicializar Credenciales
+        // 1. GESTIÓN DE CREDENCIALES
         let auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {
             vicro: { user: "vicrocrook", pass: "soyelmaster" },
             kassy: { user: "kassy10", pass: "ojitosbonitos" }
@@ -157,20 +157,18 @@
         }
 
         function configAcceso() {
-            let target = prompt("¿Qué usuario deseas configurar? (vicro / kassy)").toLowerCase();
+            let target = prompt("¿Cambiar acceso para quién? (vicro / kassy)").toLowerCase();
             if(auth[target]) {
-                let adminPass = prompt("Contraseña Maestra (2026) para autorizar cambio:");
-                if(adminPass === "2026") {
-                    let newUser = prompt("Nuevo nombre de usuario:", auth[target].user);
-                    let newPass = prompt("Nueva contraseña:", auth[target].pass);
+                if(prompt("Clave Maestra (2026):") === "2026") {
+                    let newUser = prompt("Nuevo Usuario:", auth[target].user);
+                    let newPass = prompt("Nuevo Password:", auth[target].pass);
                     if(newUser && newPass) {
-                        auth[target].user = newUser;
-                        auth[target].pass = newPass;
+                        auth[target] = { user: newUser, pass: newPass };
                         localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-                        alert("CAMBIOS GUARDADOS. Reinicia para aplicar.");
+                        alert("LISTO. Reiniciando terminal...");
                         location.reload();
                     }
-                } else { alert("ACCESO DENEGADO"); }
+                } else { alert("ERROR_CLAVE"); }
             }
         }
 
@@ -188,20 +186,25 @@
             updateUI(); updatePrices();
         }
 
+        // 2. MÚSICA
         function changeTrack() {
             const player = document.getElementById('main-audio');
-            player.src = document.getElementById('track-list').value;
+            const select = document.getElementById('track-list');
+            const trackName = document.getElementById('track-name');
+            player.src = select.value;
+            trackName.innerText = "Reproduciendo: " + select.options[select.selectedIndex].text;
             if(player.src) player.play();
         }
 
+        // 3. DATOS & EXCEL
         function descargarExcel() {
             let data = [];
             let target = currentUser === 'vicro' ? ['vicro_airtm', 'vicro_cap'] : ['kassy_caja'];
-            target.forEach(sec => db[sec].logs.forEach(l => data.push({ Origen: sec, Detalle: l.concepto, Monto: l.monto, Tipo: l.tipo })));
+            target.forEach(sec => db[sec].logs.forEach(l => data.push({ Caja: sec, Item: l.concepto, Valor: l.monto, Tipo: l.tipo })));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Respaldo");
-            XLSX.writeFile(wb, `Reporte_${currentUser}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "Backup");
+            XLSX.writeFile(wb, `Cuentas_${currentUser}.xlsx`);
         }
 
         function ajustarSaldo(sec) {
@@ -231,7 +234,7 @@
             const c = document.getElementById('c-k-caja').value, m = parseFloat(document.getElementById('m-k-caja').value);
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.kassy_caja.saldo += m : db.kassy_caja.saldo -= m;
-            db.kassy_caja.logs.push({ id: Date.now(), concepto: "✨ " + c.toUpperCase(), monto: m, tipo });
+            db.kassy_caja.logs.push({ id: Date.now(), concepto: "💖 " + c.toUpperCase(), monto: m, tipo });
             save(); document.getElementById('c-k-caja').value = ""; document.getElementById('m-k-caja').value = "";
         }
 
@@ -294,3 +297,4 @@
     </script>
 </body>
 </html>
+
