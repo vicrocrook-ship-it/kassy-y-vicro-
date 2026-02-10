@@ -1,32 +1,218 @@
-// Busca esta función en tu código y reemplázala por esta versión mejorada:
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMEGA CLOUD | VICRO CONTROL v30.9</title>
+    <style>
+        :root {
+            --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.98);
+            --red: #ff3333; --blue: #00ccff; --pink: #ff69b4;
+            --text: var(--primary); --dim: #004400; --gold: #ffcc00;
+        }
+        body.vicro-theme { --primary: #00ff41; --dim: #004400; }
+        body.kassy-theme { --primary: var(--pink); --dim: #440022; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
+        #canvas-bg { position: fixed; inset: 0; z-index: -1; }
+        #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
+        .login-card { text-align: center; width: 90%; max-width: 380px; border: 1px solid var(--primary); padding: 30px; background: #000; box-shadow: 0 0 30px var(--dim); }
+        .hacker-input { width: 100%; background: transparent; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; }
+        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; }
+        #main-app { display: none; height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.7rem; margin-bottom: 10px; }
+        .content-grid { display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 900px) { .content-grid { display: grid; grid-template-columns: 1fr 1fr; } }
+        .panel { background: var(--card); border: 1px solid var(--dim); padding: 15px; border-radius: 4px; }
+        .node-card { border: 1px solid var(--dim); padding: 15px; margin-bottom: 15px; background: rgba(0,0,0,0.5); }
+        .amount { font-size: 2.2rem; font-weight: bold; margin: 10px 0; }
+        #radar-ops { border: 1px solid var(--gold); color: var(--gold); padding: 10px; margin-bottom: 10px; font-size: 0.6rem; }
+        audio { width: 100%; height: 30px; filter: invert(1); margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas-bg"></canvas>
 
-async function configAcceso() {
-    let u = prompt("USUARIO A MODIFICAR O ELIMINAR:").toLowerCase();
-    
-    // Evitar que te borres a ti mismo por error
-    if (u === "vicrocrook" || u === "kassy10") {
-        alert("ESTE USUARIO ES DEL CORE Y NO PUEDE SER ELIMINADO");
-        return;
-    }
+    <div id="login-page">
+        <div class="login-card">
+            <h2>OMEGA_v30.9</h2>
+            <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
+            <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
+            <button class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
+            <div style="margin-top:15px; font-size: 0.6rem;">
+                <span onclick="toggleReg()" id="reg-text" style="color:var(--blue); cursor:pointer;">[REGISTRAR]</span> | 
+                <span onclick="configAcceso()" style="color:var(--gold); cursor:pointer;">[AJUSTES]</span>
+            </div>
+        </div>
+    </div>
 
-    if(db.auth[u] && prompt("MASTER KEY (2026):") === "2026") {
-        let op = prompt("¿Qué deseas hacer?\n1. Cambiar Contraseña\n2. ELIMINAR USUARIO DEFINITIVAMENTE\n(Escribe 1 o 2)");
+    <div id="main-app">
+        <div class="header">
+            <span id="display-user"></span>
+            <span id="sync-status">● CORE_CONNECTED</span>
+            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 8px; cursor:pointer;">SALIR</button>
+        </div>
+        <div id="radar-ops" style="display:none;">
+            <strong>RADAR_OPERADORES</strong>
+            <div id="listado-radar"></div>
+        </div>
+        <div id="player-vicro" style="background:#0a0a0a; border:1px solid var(--primary); padding:10px; margin-bottom:10px;">
+            <select id="track-list" onchange="changeTrack()" style="width:100%; background:#000; color:var(--primary); border:1px solid var(--dim);">
+                <option value="">-- MÚSICA (8 PISTAS) --</option>
+                <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
+                <option value="papasito.mp3">Papasito</option>
+                <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
+                <option value="titimepregunto.mp3">Tití Me Preguntó</option>
+                <option value="m5.mp3">Música 5</option>
+                <option value="m6.mp3">Música 6</option>
+                <option value="m7.mp3">Música 7</option>
+                <option value="m8.mp3">Música 8</option>
+            </select>
+            <audio controls id="main-audio"></audio>
+        </div>
+        <div class="content-grid">
+            <div id="panel-controls"></div>
+            <div class="panel">
+                <small>[ HISTORIAL_VICRO ]</small>
+                <div id="panel-logs" style="margin-top:10px;"></div>
+            </div>
+        </div>
+    </div>
 
-        if (op === "1") {
-            db.auth[u].pass = prompt("NUEVA PASS:");
-            await sync(true);
-            alert("PASSWORD ACTUALIZADA");
-        } 
-        else if (op === "2") {
-            if (confirm(`¿Estás seguro de eliminar a ${u.toUpperCase()}? Esta acción no se puede deshacer.`)) {
-                delete db.auth[u]; // Elimina el usuario del objeto
-                await sync(true); // Guarda los cambios en la nube
-                alert("USUARIO ELIMINADO DEL SISTEMA");
+    <script>
+        const BIN_ID = '698bb9a743b1c97be975254f';
+        const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
+        let db = { auth: {}, data: {} };
+        let currentUser = "";
+        let regMode = false;
+
+        async function sync(push = false) {
+            try {
+                if(push) {
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY},
+                        body: JSON.stringify(db)
+                    });
+                } else {
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                        headers: {'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false'}
+                    });
+                    const d = await res.json();
+                    if(d.auth) db = d;
+                }
                 if(currentUser === 'vicrocrook') renderRadar();
+            } catch(e) { console.log("Sync Error"); }
+        }
+
+        async function iniciarEscaneo() {
+            const u = document.getElementById('user').value.toLowerCase();
+            const p = document.getElementById('pass').value;
+            await sync();
+            if(regMode) {
+                db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
+                await sync(true); alert("SOLICITUD ENVIADA"); location.reload();
+            } else if(db.auth[u] && db.auth[u].pass === p) {
+                if(!db.auth[u].active && u !== 'vicrocrook') return alert("BLOQUEADO");
+                currentUser = u; db.auth[u].last = Date.now();
+                document.body.className = (u === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
+                renderUI(); await sync(true);
+            } else { alert("ERROR"); }
+        }
+
+        async function configAcceso() {
+            await sync();
+            let u = prompt("USUARIO A MODIFICAR O ELIMINAR:").toLowerCase();
+            if(!db.auth[u]) return alert("NO EXISTE");
+            if(prompt("MASTER KEY (2026):") === "2026") {
+                let op = prompt("1. Cambiar Pass | 2. ELIMINAR");
+                if(op === "1") { db.auth[u].pass = prompt("NUEVA PASS:"); await sync(true); alert("OK"); }
+                else if(op === "2") {
+                    if(confirm("¿Eliminar a "+u+"?")) { delete db.auth[u]; await sync(true); alert("ELIMINADO"); }
+                }
             }
         }
-    } else {
-        alert("ACCESO DENEGADO O USUARIO NO ENCONTRADO");
-    }
-}
 
+        function renderUI() {
+            const container = document.getElementById('panel-controls');
+            container.innerHTML = "";
+            const mode = db.auth[currentUser].access;
+            if(mode === 'vicro') {
+                renderCard(container, "vicro_airtm", "VICRO_AIRTM", "var(--blue)");
+                renderCard(container, "vicro_cap", "RESERVA_CAPITAL", "var(--primary)");
+                renderGlobalLogs(['vicro_airtm', 'vicro_cap']);
+            } else {
+                renderCard(container, "kassy_caja", "CAJA_KASSY", "var(--pink)");
+                renderGlobalLogs(['kassy_caja']);
+            }
+        }
+
+        function renderCard(parent, id, title, color) {
+            if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
+            parent.innerHTML += `
+                <div class="node-card" style="border-left: 5px solid ${color}">
+                    <small style="color:${color}">[ ${title} ]</small>
+                    <div class="amount" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
+                    <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
+                    <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                        <button class="btn-hack" style="background:${color}" onclick="mov('${id}','IN')">DEP</button>
+                        <button class="btn-hack" style="background:var(--red); color:white" onclick="mov('${id}','OUT')">GAS</button>
+                    </div>
+                </div>`;
+        }
+
+        async function mov(id, tipo) {
+            const c = document.getElementById(`c-${id}`).value;
+            const m = parseFloat(document.getElementById(`m-${id}`).value);
+            if(!c || isNaN(m)) return;
+            db.data[id].saldo += (tipo === 'IN' ? m : -m);
+            db.data[id].logs.push({ t: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser, node: id });
+            renderUI(); await sync(true);
+        }
+
+        function renderGlobalLogs(nodos) {
+            const logBox = document.getElementById('panel-logs'); logBox.innerHTML = "";
+            let all = []; nodos.forEach(n => { if(db.data[n]) all = all.concat(db.data[n].logs); });
+            all.sort((a,b) => b.t - a.t).slice(0, 20).forEach(l => {
+                const tag = l.node === 'vicro_airtm' ? '[AIR]' : (l.node === 'vicro_cap' ? '[CAP]' : '');
+                logBox.innerHTML += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #222; padding:5px 0; font-size:0.7rem;">
+                    <span><b style="color:var(--gold)">${tag}</b> ${l.desc}<br><small>${l.op}</small></span>
+                    <span style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</span>
+                </div>`;
+            });
+        }
+
+        function renderRadar() {
+            const list = document.getElementById('listado-radar'); document.getElementById('radar-ops').style.display = 'block';
+            list.innerHTML = ""; Object.values(db.auth).forEach(u => {
+                if(u.user === 'vicrocrook') return;
+                const online = (Date.now() - u.last) < 60000;
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; margin-top:5px;">
+                    <span>${u.user.toUpperCase()} [${online?'ON':'OFF'}]</span>
+                    <button onclick="kick('${u.user}')" style="background:red; color:white; font-size:0.5rem; border:none; padding:2px 5px; cursor:pointer;">${u.active?'EXPULSAR':'ACTIVAR'}</button>
+                </div>`;
+            });
+        }
+
+        async function kick(u) { if(prompt("MASTER KEY:") === "2026") { db.auth[u].active = !db.auth[u].active; await sync(true); renderRadar(); } }
+        async function ajustar(id) { if(prompt("KEY:") === "2026") { let v = prompt("NUEVO:"); if(v) { db.data[id].saldo = parseFloat(v); renderUI(); await sync(true); } } }
+        function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if(a.src) a.play(); }
+        function toggleReg() { regMode = !regMode; document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "ACCEDER"; document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]"; }
+
+        const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+        let stars = Array(100).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, z: Math.random()*canvas.width}));
+        function anim() {
+            ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = (currentUser === 'kassy10') ? "#ff69b4" : "#00ff41";
+            stars.forEach(s => { s.z -= 4; if(s.z<=0) s.z=canvas.width; let sx = (s.x-canvas.width/2)*(canvas.width/s.z)+canvas.width/2; let sy = (s.y-canvas.height/2)*(canvas.width/s.z)+canvas.height/2; ctx.beginPath(); ctx.arc(sx, sy, (canvas.width/s.z), 0, Math.PI*2); ctx.fill(); });
+            requestAnimationFrame(anim);
+        }
+        anim();
+    </script>
+</body>
+</html>
