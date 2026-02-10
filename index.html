@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | TERMINAL v23.0</title>
+    <title>VICRO & KASSY | V23.5</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -25,7 +25,7 @@
         /* App Layout */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--dim); padding-bottom: 10px; margin-bottom: 15px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; }
         .tab-btn { padding: 8px 15px; border: 1px solid var(--dim); background: none; color: var(--primary); cursor: pointer; font-size: 0.7rem; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: #000; }
 
@@ -34,12 +34,10 @@
         @media (min-width: 850px) { .content-section.active { display: grid; grid-template-columns: 1.2fr 1fr; height: calc(100vh - 350px); } }
 
         .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; overflow-y: auto; border-radius: 5px; }
-        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
+        .amount { font-size: 2.2rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
-        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; }
         
-        /* Reproductor Local */
-        #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
+        #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         audio { height: 35px; width: 100%; filter: invert(1) hue-rotate(45deg); }
     </style>
 </head>
@@ -48,20 +46,20 @@
 
     <div id="login-page">
         <div class="login-card">
-            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA_V23</h2>
+            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SYSTEM_ACCESS_V23.5</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="PASSWORD">
-            <button class="btn-hack" onclick="autenticar()">ACCEDER</button>
-            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.6rem;" onclick="configAcceso()">CAMBIAR_CREDENCIALES</button>
+            <button class="btn-hack" onclick="autenticar()">IDENTIFICARSE</button>
+            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.5rem;" onclick="configAcceso()">CONFIG_PASS</button>
         </div>
     </div>
 
     <div id="main-app">
         <div id="player-vicro">
-            <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">📻 SELECCIONA UN TRACK</small>
+            <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">📻 REPRODUCTOR LISTO</small>
             <audio controls id="main-audio"></audio>
-            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); padding: 5px;">
-                <option value="">-- Elige una canción --</option>
+            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); width: 100%; margin-top:5px;">
+                <option value="">-- Escoger Canción --</option>
                 <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
                 <option value="papasito.mp3">Papasito</option>
                 <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
@@ -75,53 +73,46 @@
 
         <div class="header">
             <div style="font-size:0.6rem; color:#ffcc00">
-                BTC: <span id="btc-price">...</span> | <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer; font-size:0.6rem;">BAJAR_EXCEL</button>
+                BTC: <span id="btc-price">...</span> | <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer;">EXCEL</button>
             </div>
             <button class="btn-hack" style="width: auto; padding: 5px 15px; font-size: 0.6rem; background: var(--red); color: white;" onclick="location.reload()">LOGOUT</button>
         </div>
 
         <nav class="tabs">
-            <button id="btn-v-airtm" class="tab-btn active vicro-only" onclick="switchTab(this, 'sec-vicro-airtm')">AIRTM_NODO</button>
-            <button id="btn-v-cap" class="tab-btn vicro-only" onclick="switchTab(this, 'sec-vicro-cap')">RESERVA_CAPITAL</button>
-            <button id="btn-k-caja" class="tab-btn active kassy-only" style="display:none" onclick="switchTab(this, 'sec-kassy-caja')">MI_CAJA_ROSA ✨</button>
+            <button id="btn-v-airtm" class="tab-btn active vicro-only" onclick="switchTab(this, 'sec-vicro-airtm')">AIRTM</button>
+            <button id="btn-v-cap" class="tab-btn vicro-only" onclick="switchTab(this, 'sec-vicro-cap')">CAPITAL</button>
+            <button id="btn-k-caja" class="tab-btn active kassy-only" style="display:none" onclick="switchTab(this, 'sec-kassy-caja')">CAJA_ROSA ✨</button>
         </nav>
 
         <div id="sec-vicro-airtm" class="content-section active vicro-only">
             <div class="panel">
-                <small style="color:var(--blue);">[ AIRTM ] - Clic saldo para editar</small>
                 <div class="amount" id="val-airtm" style="color:var(--blue);" onclick="ajustarSaldo('vicro_airtm')">$0.00</div>
                 <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE">
-                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO $">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-hack" style="background:var(--blue); color:black;" onclick="regCajero('INGRESO')">DEPÓSITO</button>
-                    <button class="btn-hack" style="background:var(--red); color:white;" onclick="regCajero('GASTO')">RETIRO</button>
-                </div>
+                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO">
+                <button class="btn-hack" style="background:var(--blue); color:black;" onclick="regCajero('INGRESO')">DEPÓSITO</button>
+                <button class="btn-hack" style="background:var(--red); color:white;" onclick="regCajero('GASTO')">RETIRO</button>
             </div>
             <div class="panel"><div id="list-air"></div></div>
         </div>
 
         <div id="sec-vicro-cap" class="content-section vicro-only">
             <div class="panel">
-                <small>[ RESERVA_100K ]</small>
                 <div class="amount" id="val-vicro-cap" onclick="ajustarSaldo('vicro_cap')">$0.00</div>
                 <input type="text" id="c-v-cap" class="hacker-input" placeholder="CONCEPTO">
-                <input type="number" id="m-v-cap" class="hacker-input" placeholder="MONTO $">
+                <input type="number" id="m-v-cap" class="hacker-input" placeholder="VALOR">
                 <button class="btn-hack" onclick="regVicroCap('INGRESO')">SUMAR</button>
-                <button class="btn-hack" style="background:var(--red); color:white; margin-top:10px;" onclick="regVicroCap('GASTO')">GASTAR</button>
+                <button class="btn-hack" style="background:var(--red); color:white;" onclick="regVicroCap('GASTO')">RESTAR</button>
             </div>
             <div class="panel"><div id="list-v-cap"></div></div>
         </div>
 
         <div id="sec-kassy-caja" class="content-section kassy-only">
             <div class="panel">
-                <small style="color:var(--pink);">✨ [ CAJA_KASSY ] ✨</small>
                 <div class="amount" id="val-kassy-caja" style="color:var(--pink);" onclick="ajustarSaldo('kassy_caja')">$0.00</div>
                 <input type="text" id="c-k-caja" class="hacker-input" placeholder="DETALLE">
-                <input type="number" id="m-k-caja" class="hacker-input" placeholder="MONTO $">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-hack" style="background:var(--pink); color:white;" onclick="regKassyCaja('INGRESO')">AÑADIR</button>
-                    <button class="btn-hack" style="background:white; color:var(--pink);" onclick="regKassyCaja('GASTO')">GASTAR</button>
-                </div>
+                <input type="number" id="m-k-caja" class="hacker-input" placeholder="VALOR">
+                <button class="btn-hack" style="background:var(--pink); color:white;" onclick="regKassyCaja('INGRESO')">AÑADIR</button>
+                <button class="btn-hack" style="background:white; color:var(--pink);" onclick="regKassyCaja('GASTO')">GASTAR</button>
             </div>
             <div class="panel"><div id="list-k-caja"></div></div>
         </div>
@@ -147,29 +138,25 @@
         function autenticar() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
-            if(u === auth.vicro.user && p === auth.vicro.pass) { currentUser = "vicro"; iniciar(); }
+            if(u === auth.vicro.user && p === auth.vicro.pass) { currentUser = "vicro"; entrar(); }
             else if(u === auth.kassy.user && p === auth.kassy.pass) { 
                 currentUser = "kassy"; 
                 document.getElementById('body-tag').classList.add('kassy-mode');
-                iniciar(); 
-            }
-            else { alert("ERROR"); }
+                entrar(); 
+            } else { alert("ERROR DE DATOS"); }
         }
 
         function configAcceso() {
-            let target = prompt("¿Usuario a cambiar? (vicro / kassy)").toLowerCase();
+            let target = prompt("¿Vicro o Kassy?").toLowerCase();
             if(auth[target] && prompt("Clave Maestra:") === "2026") {
-                let nu = prompt("Nuevo Usuario:", auth[target].user);
-                let np = prompt("Nuevo Password:", auth[target].pass);
-                if(nu && np) {
-                    auth[target] = { user: nu, pass: np };
-                    localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-                    location.reload();
-                }
+                auth[target].user = prompt("Nuevo Usuario:", auth[target].user);
+                auth[target].pass = prompt("Nuevo Password:", auth[target].pass);
+                localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+                location.reload();
             }
         }
 
-        function iniciar() {
+        function entrar() {
             document.getElementById('login-page').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             if(currentUser === "vicro") {
@@ -199,12 +186,12 @@
             target.forEach(sec => db[sec].logs.forEach(l => data.push({ Seccion: sec, Detalle: l.concepto, Monto: l.monto, Tipo: l.tipo })));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Backup");
-            XLSX.writeFile(wb, `Cuentas_${currentUser}.xlsx`);
+            XLSX.utils.book_append_sheet(wb, ws, "Respaldo");
+            XLSX.writeFile(wb, `Respaldo_${currentUser}.xlsx`);
         }
 
         function ajustarSaldo(sec) {
-            let v = prompt("VALOR ACTUAL:", db[sec].saldo);
+            let v = prompt("SALDO ACTUAL:", db[sec].saldo);
             if(v !== null && !isNaN(v)) { db[sec].saldo = parseFloat(v); save(); }
         }
 
@@ -215,7 +202,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.vicro_airtm.saldo += m : db.vicro_airtm.saldo -= m;
             db.vicro_airtm.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save();
+            save(); document.getElementById('c-air').value = ""; document.getElementById('m-air').value = "";
         }
 
         function regVicroCap(tipo) {
@@ -223,7 +210,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.vicro_cap.saldo += m : db.vicro_cap.saldo -= m;
             db.vicro_cap.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save();
+            save(); document.getElementById('c-v-cap').value = ""; document.getElementById('m-v-cap').value = "";
         }
 
         function regKassyCaja(tipo) {
@@ -231,7 +218,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.kassy_caja.saldo += m : db.kassy_caja.saldo -= m;
             db.kassy_caja.logs.push({ id: Date.now(), concepto: "✨ " + c.toUpperCase(), monto: m, tipo });
-            save();
+            save(); document.getElementById('c-k-caja').value = ""; document.getElementById('m-k-caja').value = "";
         }
 
         function eliminar(sec, id) {
@@ -252,10 +239,7 @@
         function renderLogs(sec, listId) {
             const cont = document.getElementById(listId); cont.innerHTML = "";
             [...db[sec].logs].reverse().forEach(l => {
-                cont.innerHTML += `<div class="log-item">
-                    <div><b>${l.concepto}</b></div>
-                    <div>$${l.monto.toLocaleString()} <span class="del-btn" onclick="eliminar('${sec}', ${l.id})">X</span></div>
-                </div>`;
+                cont.innerHTML += `<div class="log-item"><div><b>${l.concepto}</b></div><div>$${l.monto.toLocaleString()} <span onclick="eliminar('${sec}', ${l.id})" style="cursor:pointer;color:red">X</span></div></div>`;
             });
         }
 
@@ -263,5 +247,33 @@
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active');
+        }
 
+        async function updatePrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+                const data = await res.json();
+                document.getElementById('btc-price').innerText = `$${data.bitcoin.usd.toLocaleString()}`;
+                document.getElementById('eth-price').innerText = `$${data.ethereum.usd.toLocaleString()}`;
+            } catch(e){}
+        }
 
+        const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+        let stars = Array(150).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, z: Math.random()*canvas.width}));
+        function anim() {
+            ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = (currentUser === "kassy") ? "#ff69b4" : "#00ff41";
+            stars.forEach(s => {
+                s.z -= 4; if(s.z<=0) s.z=canvas.width;
+                let sx = (s.x-canvas.width/2)*(canvas.width/s.z)+canvas.width/2;
+                let sy = (s.y-canvas.height/2)*(canvas.width/s.z)+canvas.height/2;
+                ctx.beginPath(); ctx.arc(sx, sy, (canvas.width/s.z), 0, Math.PI*2); ctx.fill();
+            });
+            requestAnimationFrame(anim);
+        }
+        anim();
+    </script>
+</body>
+</html>
