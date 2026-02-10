@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICRO & KASSY | V20.6 FINAL</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.95);
+            --red: #ff3333; --blue: #00ccff; --pink: #ff69b4;
+            --text: var(--primary); --dim: #004400;
+        }
+        body.kassy-mode { --primary: var(--pink); --dim: #440022; --text: var(--pink); }
+        
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
+        #canvas-bg { position: fixed; inset: 0; z-index: -1; }
+
+        /* Login */
+        #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
+        .login-card { text-align: center; width: 90%; max-width: 360px; border: 1px solid var(--primary); padding: 40px; background: #000; box-shadow: 0 0 30px var(--primary); }
+        .hacker-input { width: 100%; background: #000; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
+        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+
+        /* App */
+        #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--dim); padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { padding: 8px 15px; border: 1px solid var(--dim); background: none; color: var(--primary); cursor: pointer; font-size: 0.7rem; }
+        .tab-btn.active { background: var(--primary); color: #000; }
+
+        .content-section { display: none; gap: 20px; }
+        .content-section.active { display: flex; flex-direction: column; }
+        @media (min-width: 850px) { .content-section.active { display: grid; grid-template-columns: 1.2fr 1fr; height: calc(100vh - 350px); } }
+
+        .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; overflow-y: auto; border-radius: 5px; }
+        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
+        .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
+        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; }
+        
+        /* Reproductor SoundCloud */
+        #music-container { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background: #000; border-top: 1px solid var(--dim); z-index: 1000; }
+
+        @media (max-width: 600px) { .amount { font-size: 1.8rem; } }
+    </style>
+</head>
+<body id="body-tag">
+
+    <canvas id="canvas-bg"></canvas>
+
+    <div id="login-page">
+        <div class="login-card">
+            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA_V20.6</h2>
+            <input type="text" id="user" class="hacker-input" placeholder="USUARIO" autocomplete="off">
+            <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
+            <button class="btn-hack" onclick="autenticar()">ACCEDER</button>
+        </div>
+    </div>
+
+    <div id="main-app">
+        <div class="header">
+            <div style="font-size:0.6rem; color:#ffcc00">
+                BTC: <span id="btc-price">...</span> | <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer; padding: 2px 5px;">GUARDAR_EXCEL</button>
+            </div>
+            <button class="btn-hack" style="width: auto; padding: 5px 15px; font-size: 0.6rem; background: var(--red); color: white;" onclick="location.reload()">CERRAR_SESIÓN</button>
+        </div>
+
+        <nav class="tabs">
+            <button id="btn-v-airtm" class="tab-btn active vicro-only" onclick="switchTab(this, 'sec-vicro-airtm')">01_NODO_AIRTM</button>
+            <button id="btn-v-cap" class="tab-btn vicro-only" onclick="switchTab(this, 'sec-vicro-cap')">02_RESERVA_CAPITAL</button>
+            <button id="btn-k-caja" class="tab-btn active kassy-only" style="display:none" onclick="switchTab(this, 'sec-kassy-caja')">MI_CAJA_MÁGICA ✨</button>
+        </nav>
+
+        <div id="sec-vicro-airtm" class="content-section active vicro-only">
+            <div class="panel">
+                <small style="color:var(--blue);">[ AIRTM_OPERATIVO ] - Toca número para ajustar</small>
+                <div class="amount" id="val-airtm" style="color:var(--blue);" onclick="ajustarSaldo('vicro_airtm')">$0.00</div>
+                <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE">
+                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO USD">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn-hack" style="background:var(--blue); color:black;" onclick="regCajero('INGRESO')">DEPÓSITO</button>
+                    <button class="btn-hack" style="background:var(--red); color:white;" onclick="regCajero('GASTO')">RETIRO</button>
+                </div>
+            </div>
+            <div class="panel"><small>[ HISTORIAL ]</small><div id="list-air"></div></div>
+        </div>
+
+        <div id="sec-vicro-cap" class="content-section vicro-only">
+            <div class="panel">
+                <small>[ RESERVA_100K ] - Toca número para ajustar</small>
+                <div class="amount" id="val-vicro-cap" onclick="ajustarSaldo('vicro_cap')">$0.00</div>
+                <input type="text" id="c-v-cap" class="hacker-input" placeholder="CONCEPTO">
+                <input type="number" id="m-v-cap" class="hacker-input" placeholder="MONTO $">
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-hack" onclick="regVicroCap('INGRESO')">AÑADIR</button>
+                    <button class="btn-hack" style="background:var(--red); color:white;" onclick="regVicroCap('GASTO')">GASTO</button>
+                </div>
+            </div>
+            <div class="panel"><small>[ MOVIMIENTOS ]</small><div id="list-v-cap"></div></div>
+        </div>
+
+        <div id="sec-kassy-caja" class="content-section kassy-only">
+            <div class="panel">
+                <small style="color:var(--pink);">✨ [ DINERO_KASSY ] ✨</small>
+                <div class="amount" id="val-kassy-caja" style="color:var(--pink);" onclick="ajustarSaldo('kassy_caja')">$0.00</div>
+                <input type="text" id="c-k-caja" class="hacker-input" placeholder="¿QUÉ PASÓ?">
+                <input type="number" id="m-k-caja" class="hacker-input" placeholder="MONTO $">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn-hack" style="background:var(--pink); color:white;" onclick="regKassyCaja('INGRESO')">AÑADIR</button>
+                    <button class="btn-hack" style="background:white; color:var(--pink);" onclick="regKassyCaja('GASTO')">GASTAR</button>
+                </div>
+            </div>
+            <div class="panel" style="border-color:var(--pink);"><small>🌸 [ MIS_AVENTURAS ]</small><div id="list-k-caja"></div></div>
+        </div>
+    </div>
+
+    <div id="music-container">
+        <iframe width="100%" height="80" scrolling="no" frameborder="no" allow="autoplay" 
+            src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1435948969&color=%2300ff41&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
+        </iframe>
+    </div>
+
+    <script>
+        const DB_KEY = 'vicro_v20_final_db';
+        let currentUser = "";
+        let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
+            vicro_airtm: { saldo: 2000, logs: [] },
+            vicro_cap: { saldo: 100000, logs: [] },
+            kassy_caja: { saldo: 0, logs: [] }
+        };
+
+        function autenticar() {
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            if(u === "vicrocrook" && p === "soyelmaster") {
+                currentUser = "vicro";
+                iniciarApp();
+            } else if(u === "kassy10" && p === "ojitosbonitos") {
+                currentUser = "kassy";
+                document.getElementById('body-tag').classList.add('kassy-mode');
+                iniciarApp();
+            } else { alert("DATOS INCORRECTOS"); }
+        }
+
+        function iniciarApp() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            if(currentUser === "vicro") {
+                document.querySelectorAll('.vicro-only').forEach(e => e.style.display = (e.tagName==='BUTTON'?'block':'flex'));
+                document.querySelectorAll('.kassy-only').forEach(e => e.style.display = 'none');
+            } else {
+                document.querySelectorAll('.vicro-only').forEach(e => e.style.display = 'none');
+                document.querySelectorAll('.kassy-only').forEach(e => e.style.display = (e.tagName==='BUTTON'?'block':'flex'));
+                document.getElementById('sec-kassy-caja').classList.add('active');
+            }
+            updateUI(); updatePrices();
+        }
+
+        function descargarExcel() {
+            let data = [];
+            let targetSec = currentUser === 'vicro' ? ['vicro_airtm', 'vicro_cap'] : ['kassy_caja'];
+            targetSec.forEach(sec => {
+                db[sec].logs.forEach(l => {
+                    data.push({ Origen: sec, Detalle: l.concepto, Monto: l.monto, Tipo: l.tipo });
+                });
+            });
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Backup");
+            XLSX.writeFile(wb, `Reporte_${currentUser}.xlsx`);
+        }
+
+        function ajustarSaldo(sec) {
+            let v = prompt("VALOR EXACTO ACTUAL:", db[sec].saldo);
+            if(v !== null && !isNaN(v)) {
+                db[sec].saldo = parseFloat(v);
+                db[sec].logs.push({ id: Date.now(), concepto: "AJUSTE_MANUAL", monto: db[sec].saldo, tipo: "INFO" });
+                save();
+            }
+        }
+
+        function save() { localStorage.setItem(DB_KEY, JSON.stringify(db)); updateUI(); }
+
+        function regCajero(tipo) {
+            const c = document.getElementById('c-air').value, m = parseFloat(document.getElementById('m-air').value);
+            if(!c || isNaN(m)) return;
+            tipo === 'INGRESO' ? db.vicro_airtm.saldo += m : db.vicro_airtm.saldo -= m;
+            db.vicro_airtm.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
+            document.getElementById('c-air').value = ""; document.getElementById('m-air').value = "";
+            save();
+        }
+
+        function regVicroCap(tipo) {
+            const c = document.getElementById('c-v-cap').value, m = parseFloat(document.getElementById('m-v-cap').value);
+            if(!c || isNaN(m)) return;
+            tipo === 'INGRESO' ? db.vicro_cap.saldo += m : db.vicro_cap.saldo -= m;
+            db.vicro_cap.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
+            document.getElementById('c-v-cap').value = ""; document.getElementById('m-v-cap').value = "";
+            save();
+        }
+
+        function regKassyCaja(tipo) {
+            const c = document.getElementById('c-k-caja').value, m = parseFloat(document.getElementById('m-k-caja').value);
+            if(!c || isNaN(m)) return;
+            tipo === 'INGRESO' ? db.kassy_caja.saldo += m : db.kassy_caja.saldo -= m;
+            db.kassy_caja.logs.push({ id: Date.now(), concepto: "✨ " + c.toUpperCase(), monto: m, tipo });
+            document.getElementById('c-k-caja').value = ""; document.getElementById('m-k-caja').value = "";
+            save();
+        }
+
+        function eliminar(sec, id) {
+            if(prompt("CLAVE (2026):") === "2026") {
+                db[sec].logs = db[sec].logs.filter(l => l.id !== id);
+                save();
+            }
+        }
+
+        function updateUI() {
+            if(currentUser === "vicro") {
+                document.getElementById('val-airtm').innerText = `$${db.vicro_airtm.saldo.toLocaleString()}`;
+                document.getElementById('val-vicro-cap').innerText = `$${db.vicro_cap.saldo.toLocaleString()}`;
+                renderLogs('vicro_airtm', 'list-air'); renderLogs('vicro_cap', 'list-v-cap');
+            } else {
+                document.getElementById('val-kassy-caja').innerText = `$${db.kassy_caja.saldo.toLocaleString()}`;
+                renderLogs('kassy_caja', 'list-k-caja');
+            }
+        }
+
+        function renderLogs(sec, listId) {
+            const cont = document.getElementById(listId); cont.innerHTML = "";
+            [...db[sec].logs].reverse().forEach(l => {
+                cont.innerHTML += `<div class="log-item">
+                    <div><b>${l.concepto}</b></div>
+                    <div>$${l.monto.toLocaleString()} <span class="del-btn" onclick="eliminar('${sec}', ${l.id})">X</span></div>
+                </div>`;
+            });
+        }
+
+        function switchTab(btn, id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); btn.classList.add('active');
+        }
+
+        async function updatePrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+                const data = await res.json();
+                document.getElementById('btc-price').innerText = `$${data.bitcoin.usd.toLocaleString()}`;
+                document.getElementById('eth-price').innerText = `$${data.ethereum.usd.toLocaleString()}`;
+            } catch(e){}
+        }
+
+        const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+        let stars = Array(150).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, z: Math.random()*canvas.width}));
+        function anim() {
+            ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = (currentUser === "kassy") ? "#ff69b4" : "#00ff41";
+            stars.forEach(s => {
+                s.z -= 4; if(s.z<=0) s.z=canvas.width;
+                let sx = (s.x-canvas.width/2)*(canvas.width/s.z)+canvas.width/2;
+                let sy = (s.y-canvas.height/2)*(canvas.width/s.z)+canvas.height/2;
+                ctx.beginPath(); ctx.arc(sx, sy, (canvas.width/s.z), 0, Math.PI*2); ctx.fill();
+            });
+            requestAnimationFrame(anim);
+        }
+        anim();
+    </script>
+</body>
+</html>
