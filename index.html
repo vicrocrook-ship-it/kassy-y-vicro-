@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | V21.0</title>
+    <title>VICRO & KASSY | V22.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.95);
             --red: #ff3333; --blue: #00ccff; --pink: #ff69b4;
-            --text: var(--primary); --dim: #004400;
+            --text: var(--primary); --dim: #004400; --gold: #ffcc00;
         }
         body.kassy-mode { --primary: var(--pink); --dim: #440022; --text: var(--pink); }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
@@ -19,8 +19,8 @@
         /* Login */
         #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
         .login-card { text-align: center; width: 90%; max-width: 360px; border: 1px solid var(--primary); padding: 40px; background: #000; box-shadow: 0 0 30px var(--primary); }
-        .hacker-input { width: 100%; background: #000; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 15px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
-        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .hacker-input { width: 100%; background: #000; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
+        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
 
         /* App */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
@@ -38,9 +38,9 @@
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
         .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; }
         
-        /* Reproductor Nativo Superior */
-        #player-vicro { background: #111; border: 1px solid var(--dim); padding: 10px; border-radius: 5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        audio { height: 30px; filter: invert(100%) hue-rotate(180deg) brightness(1.5); flex-grow: 1; }
+        /* Reproductor Nativo */
+        #player-vicro { background: #111; border: 1px solid var(--dim); padding: 10px; border-radius: 5px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        audio { height: 30px; filter: invert(100%) hue-rotate(180deg) brightness(1.5); flex-grow: 1; min-width: 200px; }
     </style>
 </head>
 <body id="body-tag">
@@ -48,24 +48,25 @@
 
     <div id="login-page">
         <div class="login-card">
-            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA_V21</h2>
+            <h2 id="log-title" style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA_V22</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            <button class="btn-hack" onclick="autenticar()">INICIAR</button>
+            <button class="btn-hack" onclick="autenticar()">INICIAR_SESIÓN</button>
+            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.6rem;" onclick="configAcceso()">CONFIGURAR_ACCESO</button>
         </div>
     </div>
 
     <div id="main-app">
         <div id="player-vicro">
-            <small style="font-size: 0.6rem; color: var(--gold)">🐰 BAD BUNNY LIVE:</small>
+            <small style="font-size: 0.6rem; color: var(--gold)">🐎 JOAN SEBASTIAN:</small>
             <audio controls id="main-audio">
                 <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-                Tu navegador no soporta audio.
             </audio>
-            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.6rem; border:1px solid var(--dim)">
-                <option value="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Universal_Current/Ketsa_-_08_-_Small_Steps.mp3">Seleccionar Track...</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">Track 01 - Mix Bad</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3">Track 02 - Vibes</option>
+            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.6rem; border:1px solid var(--dim); padding: 5px;">
+                <option value="">-- Seleccionar Éxito --</option>
+                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">Mix: Tatuajes / Secreto de Amor</option>
+                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3">Mix: Rumores / Sentimental</option>
+                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3">Mix: Lobo Domesticado</option>
             </select>
         </div>
 
@@ -126,24 +127,51 @@
     </div>
 
     <script>
-        const DB_KEY = 'vicro_v21_db';
-        let currentUser = "";
+        const DB_KEY = 'vicro_v22_db';
+        const AUTH_KEY = 'vicro_auth_config';
+        
+        // Cargar o Inicializar Credenciales
+        let auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {
+            vicro: { user: "vicrocrook", pass: "soyelmaster" },
+            kassy: { user: "kassy10", pass: "ojitosbonitos" }
+        };
+
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
             vicro_airtm: { saldo: 2000, logs: [] },
             vicro_cap: { saldo: 100000, logs: [] },
             kassy_caja: { saldo: 0, logs: [] }
         };
 
+        let currentUser = "";
+
         function autenticar() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
-            if(u === "vicrocrook" && p === "soyelmaster") { currentUser = "vicro"; iniciar(); }
-            else if(u === "kassy10" && p === "ojitosbonitos") { 
+            if(u === auth.vicro.user && p === auth.vicro.pass) { currentUser = "vicro"; iniciar(); }
+            else if(u === auth.kassy.user && p === auth.kassy.pass) { 
                 currentUser = "kassy"; 
                 document.getElementById('body-tag').classList.add('kassy-mode');
                 iniciar(); 
             }
-            else { alert("ERROR"); }
+            else { alert("DATOS INCORRECTOS"); }
+        }
+
+        function configAcceso() {
+            let target = prompt("¿Qué usuario deseas configurar? (vicro / kassy)").toLowerCase();
+            if(auth[target]) {
+                let adminPass = prompt("Contraseña Maestra (2026) para autorizar cambio:");
+                if(adminPass === "2026") {
+                    let newUser = prompt("Nuevo nombre de usuario:", auth[target].user);
+                    let newPass = prompt("Nueva contraseña:", auth[target].pass);
+                    if(newUser && newPass) {
+                        auth[target].user = newUser;
+                        auth[target].pass = newPass;
+                        localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+                        alert("CAMBIOS GUARDADOS. Reinicia para aplicar.");
+                        location.reload();
+                    }
+                } else { alert("ACCESO DENEGADO"); }
+            }
         }
 
         function iniciar() {
@@ -163,7 +191,7 @@
         function changeTrack() {
             const player = document.getElementById('main-audio');
             player.src = document.getElementById('track-list').value;
-            player.play();
+            if(player.src) player.play();
         }
 
         function descargarExcel() {
@@ -172,7 +200,7 @@
             target.forEach(sec => db[sec].logs.forEach(l => data.push({ Origen: sec, Detalle: l.concepto, Monto: l.monto, Tipo: l.tipo })));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Backup");
+            XLSX.utils.book_append_sheet(wb, ws, "Respaldo");
             XLSX.writeFile(wb, `Reporte_${currentUser}.xlsx`);
         }
 
@@ -188,7 +216,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.vicro_airtm.saldo += m : db.vicro_airtm.saldo -= m;
             db.vicro_airtm.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save();
+            save(); document.getElementById('c-air').value = ""; document.getElementById('m-air').value = "";
         }
 
         function regVicroCap(tipo) {
@@ -196,7 +224,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.vicro_cap.saldo += m : db.vicro_cap.saldo -= m;
             db.vicro_cap.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save();
+            save(); document.getElementById('c-v-cap').value = ""; document.getElementById('m-v-cap').value = "";
         }
 
         function regKassyCaja(tipo) {
@@ -204,7 +232,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.kassy_caja.saldo += m : db.kassy_caja.saldo -= m;
             db.kassy_caja.logs.push({ id: Date.now(), concepto: "✨ " + c.toUpperCase(), monto: m, tipo });
-            save();
+            save(); document.getElementById('c-k-caja').value = ""; document.getElementById('m-k-caja').value = "";
         }
 
         function eliminar(sec, id) {
