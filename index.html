@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | OMEGA CLOUD v29.0</title>
+    <title>VICRO & KASSY | OMEGA GATE v30.0</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.98);
             --red: #ff3333; --blue: #00ccff; --pink: #ff69b4;
             --text: var(--primary); --dim: #004400; --gold: #ffcc00;
         }
-        /* Colores dinámicos por usuario */
         body.vicro-theme { --primary: #00ff41; --dim: #004400; }
         body.kassy-theme { --primary: var(--pink); --dim: #440022; }
         body.user-blue { --primary: var(--blue); --dim: #002244; }
         body.user-gold { --primary: var(--gold); --dim: #443300; }
-        body.user-red { --primary: var(--red); --dim: #440000; }
-
+        
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); transition: 0.5s; }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
 
@@ -37,10 +35,13 @@
         .content-grid { display: grid; grid-template-columns: 1fr; gap: 15px; overflow-y: auto; }
         @media (min-width: 850px) { .content-grid { grid-template-columns: 1.2fr 1fr; height: 80vh; } }
 
-        .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 5px; }
+        .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 5px; margin-bottom: 15px; }
         .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
         .del-btn { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 2px 5px; }
+
+        .alert-box { background: var(--red); color: white; padding: 10px; margin-bottom: 10px; font-size: 0.7rem; cursor: pointer; animation: pulse 1s infinite; text-align: center; display: none; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         #player-vicro { background: #111; border: 1px solid var(--primary); padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         audio { height: 30px; width: 100%; filter: invert(1); margin-top: 5px; }
@@ -51,12 +52,12 @@
 
     <div id="biometric-overlay">
         <div class="scanner-bar"></div>
-        <div id="bio-msg">SINCRONIZANDO_CORE_DATABASE...</div>
+        <div id="bio-msg">ESTABLECIENDO_CONEXIÓN_SEGURA...</div>
     </div>
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="login-title">VORTEX_CLOUD_v29</h2>
+            <h2 id="login-title">OMEGA_CLOUD_v30</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
             
@@ -68,16 +69,21 @@
             </div>
 
             <button id="btn-main" class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
-            <button id="btn-toggle" onclick="toggleAuthMode()" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:0.6rem; margin-top:10px;">[ CREAR_NUEVO_OPERADOR ]</button>
+            <div style="margin-top:10px; display: flex; flex-direction: column; gap: 5px;">
+                <button id="btn-toggle" onclick="toggleAuthMode()" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:0.6rem;">[ REGISTRAR_NUEVO_ACCESO_VICRO ]</button>
+                <button onclick="configAcceso()" style="background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.5rem;">[ AJUSTES_GLOBALES ]</button>
+            </div>
         </div>
     </div>
 
     <div id="main-app">
         <div class="header">
             <span id="display-user"></span>
-            <span id="sync-indicator">● CLOUD_SYNC_OK</span>
+            <span id="sync-indicator">● ONLINE</span>
             <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding: 2px 10px; cursor:pointer;">CERRAR</button>
         </div>
+
+        <div id="admin-alert" class="alert-box" onclick="abrirAprobaciones()">⚠️ HAY SOLICITUDES DE ACCESO PENDIENTES [REVISAR]</div>
 
         <div id="player-vicro">
             <div style="display:flex; gap:5px;">
@@ -92,7 +98,7 @@
         <div class="content-grid">
             <div class="panel" id="panel-controls"></div>
             <div class="panel">
-                <small>[ HISTORIAL_GLOBAL ]</small>
+                <small>[ HISTORIAL_VICRO ]</small>
                 <div id="panel-logs"></div>
             </div>
         </div>
@@ -104,29 +110,20 @@
 
         let db = {
             auth: {
-                vicro: { user: "vicrocrook", pass: "soyelmaster", theme: "vicro-theme" },
-                kassy: { user: "kassy10", pass: "ojitosbonitos", theme: "kassy-theme" }
+                vicrocrook: { user: "vicrocrook", pass: "soyelmaster", theme: "vicro-theme", access: "vicro", active: true },
+                kassy10: { user: "kassy10", pass: "ojitosbonitos", theme: "kassy-theme", access: "kassy", active: true }
             },
             data: {
-                vicro_airtm: { saldo: 2000, logs: [] },
-                vicro_cap: { saldo: 100000, logs: [] },
+                vicro_airtm: { saldo: 0, logs: [] },
+                vicro_cap: { saldo: 0, logs: [] },
                 kassy_caja: { saldo: 0, logs: [] }
             },
-            playlist: [
-                { name: "Si Antes Te Hubiera Conocido", file: "antestehubieraconocido.mp3" },
-                { name: "Papasito", file: "papasito.mp3" },
-                { name: "Una Noche en Medellín", file: "unanochemedellin.mp3" },
-                { name: "Tití Me Preguntó", file: "titimepregunto.mp3" },
-                { name: "Música 5", file: "m5.mp3" },
-                { name: "Música 6", file: "m6.mp3" },
-                { name: "Música 7", file: "m7.mp3" },
-                { name: "Música 8", file: "m8.mp3" }
-            ]
+            playlist: []
         };
 
         let currentUser = "";
-        let selectedTheme = "vicro-theme";
         let isRegisterMode = false;
+        let selectedTheme = "vicro-theme";
 
         async function syncCloud(push = false) {
             try {
@@ -144,35 +141,50 @@
                     if(data.auth) db = data;
                 }
                 updatePlaylistUI();
-            } catch (e) { console.log("Sync Error"); }
+                checkPendingUsers();
+            } catch (e) { console.error("Sync error"); }
+        }
+
+        function checkPendingUsers() {
+            if(currentUser !== "vicrocrook") return;
+            const pendings = Object.values(db.auth).filter(u => u.active === false);
+            document.getElementById('admin-alert').style.display = pendings.length > 0 ? 'block' : 'none';
+        }
+
+        async function abrirAprobaciones() {
+            const pendings = Object.values(db.auth).filter(u => u.active === false);
+            let msg = "OPERADORES ESPERANDO:\n";
+            pendings.forEach(u => msg += `- ${u.user}\n`);
+            let target = prompt(msg + "\nEscriba el nombre para APROBAR o cancelar:");
+            
+            if(target && db.auth[target.toLowerCase()]) {
+                db.auth[target.toLowerCase()].active = true;
+                await syncCloud(true);
+                alert("OPERADOR ACTIVADO");
+                checkPendingUsers();
+            }
         }
 
         function toggleAuthMode() {
             isRegisterMode = !isRegisterMode;
             document.getElementById('color-selector').style.display = isRegisterMode ? 'grid' : 'none';
-            document.getElementById('btn-main').innerText = isRegisterMode ? 'REGISTRAR OPERADOR' : 'ACCEDER';
-            document.getElementById('login-title').innerText = isRegisterMode ? 'NUEVA_ENTIDAD' : 'VORTEX_CLOUD_v29';
+            document.getElementById('btn-main').innerText = isRegisterMode ? 'ENVIAR SOLICITUD' : 'ACCEDER';
         }
 
-        function selectColor(theme) {
-            selectedTheme = theme;
-            document.body.className = theme;
-        }
+        function selectColor(t) { selectedTheme = t; document.body.className = t; }
 
         async function iniciarEscaneo() {
             const u = document.getElementById('user').value.trim().toLowerCase();
             const p = document.getElementById('pass').value.trim();
-            
             document.getElementById('biometric-overlay').style.display = 'flex';
             await syncCloud();
 
             if (isRegisterMode) {
                 if (db.auth[u]) { alert("USUARIO EXISTENTE"); }
                 else {
-                    db.auth[u] = { user: u, pass: p, theme: selectedTheme };
-                    db.data[u + "_caja"] = { saldo: 0, logs: [] };
+                    db.auth[u] = { user: u, pass: p, theme: selectedTheme, access: "vicro", active: false };
                     await syncCloud(true);
-                    alert("REGISTRO EXITOSO");
+                    alert("SOLICITUD ENVIADA. ESPERA A QUE VICRO TE APRUEBE.");
                     toggleAuthMode();
                 }
                 document.getElementById('biometric-overlay').style.display = 'none';
@@ -180,16 +192,25 @@
             }
 
             if (db.auth[u] && db.auth[u].pass === p) {
-                currentUser = u;
-                document.body.className = db.auth[u].theme || 'vicro-theme';
-                setTimeout(() => {
+                if(db.auth[u].active === false) {
+                    alert("ACCESO BLOQUEADO: Esperando aprobación de Vicro.");
+                } else {
+                    currentUser = u;
+                    document.body.className = db.auth[u].theme;
                     document.getElementById('login-page').style.display = 'none';
-                    document.getElementById('biometric-overlay').style.display = 'none';
                     showApp();
-                }, 1000);
-            } else {
-                alert("ACCESO DENEGADO");
-                document.getElementById('biometric-overlay').style.display = 'none';
+                }
+            } else { alert("DATOS INCORRECTOS"); }
+            document.getElementById('biometric-overlay').style.display = 'none';
+        }
+
+        async function configAcceso() {
+            let target = prompt("Usuario a modificar:").toLowerCase();
+            if(db.auth[target] && prompt("Master Key:") === "2026") {
+                db.auth[target].user = prompt("Nuevo nombre:", db.auth[target].user);
+                db.auth[target].pass = prompt("Nueva pass:", db.auth[target].pass);
+                await syncCloud(true);
+                alert("ACTUALIZADO");
             }
         }
 
@@ -197,29 +218,26 @@
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
             updateUI();
-            updatePlaylistUI();
+            checkPendingUsers();
         }
 
         function updatePlaylistUI() {
             const list = document.getElementById('track-list');
             list.innerHTML = '<option value="">-- MÚSICA --</option>';
-            db.playlist.forEach(t => {
-                let opt = new Option(t.name, t.file);
-                list.add(opt);
-            });
+            db.playlist.forEach(t => list.add(new Option(t.name, t.file)));
         }
 
         function updateUI() {
             const controls = document.getElementById('panel-controls');
             controls.innerHTML = "";
-            if(currentUser === "vicro") {
-                renderNodo(controls, "vicro_airtm", "AIRTM_NODE", "var(--blue)");
-                renderNodo(controls, "vicro_cap", "RESERVA_CAPITAL", "var(--primary)");
+            const acc = db.auth[currentUser].access;
+            if(acc === "vicro") {
+                renderNodo(controls, "vicro_airtm", "VICRO_AIRTM", "var(--blue)");
+                renderNodo(controls, "vicro_cap", "VICRO_CAPITAL", "var(--primary)");
                 renderLogs('vicro_airtm');
             } else {
-                let nodeKey = db.data[currentUser + "_caja"] ? currentUser + "_caja" : "kassy_caja";
-                renderNodo(controls, nodeKey, "NODO_PERSONAL", "var(--primary)");
-                renderLogs(nodeKey);
+                renderNodo(controls, "kassy_caja", "KASSY_CAJA ✨", "var(--pink)");
+                renderLogs('kassy_caja');
             }
         }
 
@@ -230,8 +248,10 @@
                     <div class="amount" style="color:${color}" onclick="ajustarSaldo('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
                     <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
                     <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO">
-                    <button class="btn-hack" style="background:${color}" onclick="registrar('${id}', 'INGRESO')">DEPÓSITO</button>
-                    <button class="btn-hack" style="background:var(--red); color:white" onclick="registrar('${id}', 'GASTO')">GASTO</button>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <button class="btn-hack" style="background:${color}" onclick="registrar('${id}', 'INGRESO')">DEPÓSITO</button>
+                        <button class="btn-hack" style="background:var(--red); color:white" onclick="registrar('${id}', 'GASTO')">GASTO</button>
+                    </div>
                 </div>`;
         }
 
@@ -240,9 +260,8 @@
             const mon = parseFloat(document.getElementById(`m-${sec}`).value);
             if(!det || isNaN(mon)) return;
             db.data[sec].saldo += (tipo === 'INGRESO' ? mon : -mon);
-            db.data[sec].logs.push({ id: Date.now(), concepto: det.toUpperCase(), monto: mon, tipo });
-            updateUI();
-            await syncCloud(true);
+            db.data[sec].logs.push({ id: Date.now(), concepto: det.toUpperCase(), monto: mon, tipo, op: currentUser });
+            updateUI(); await syncCloud(true);
         }
 
         function renderLogs(sec) {
@@ -250,23 +269,38 @@
             cont.innerHTML = "";
             [...db.data[sec].logs].reverse().forEach(l => {
                 cont.innerHTML += `<div class="log-item">
-                    <div><b>${l.concepto}</b><br><small>${l.tipo}</small></div>
-                    <div>$${l.monto.toLocaleString()}</div>
+                    <div><b>${l.concepto}</b><br><small>POR: ${l.op || 'ADMIN'}</small></div>
+                    <div>$${l.monto.toLocaleString()} <span class="del-btn" onclick="eliminarLog('${sec}', ${l.id})">X</span></div>
                 </div>`;
             });
         }
 
+        async function eliminarLog(sec, id) {
+            if(prompt("Master Key:") === "2026") {
+                db.data[sec].logs = db.data[sec].logs.filter(l => l.id !== id);
+                updateUI(); await syncCloud(true);
+            }
+        }
+
+        async function ajustarSaldo(sec) {
+            if(prompt("Master Key:") === "2026") {
+                let n = prompt("Nuevo Saldo:", db.data[sec].saldo);
+                if(n) { db.data[sec].saldo = parseFloat(n); updateUI(); await syncCloud(true); }
+            }
+        }
+
         function changeTrack() {
-            const player = document.getElementById('main-audio');
-            player.src = document.getElementById('track-list').value;
-            if(player.src) player.play();
+            const p = document.getElementById('main-audio');
+            p.src = document.getElementById('track-list').value;
+            if(p.src) p.play();
         }
 
         async function addMusic() {
-            const n = prompt("Nombre canción:"), f = prompt("Archivo .mp3:");
+            const n = prompt("Nombre:"), f = prompt("Archivo .mp3:");
             if(n && f) { db.playlist.push({name:n, file:f}); await syncCloud(true); }
         }
 
+        // Animación de fondo
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.onresize = resize; resize();
@@ -286,4 +320,3 @@
     </script>
 </body>
 </html>
-
