@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | V22.5</title>
+    <title>VICRO & KASSY | TERMINAL v23.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -25,8 +25,8 @@
         /* App Layout */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--dim); padding-bottom: 10px; margin-bottom: 15px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab-btn { padding: 8px 15px; border: 1px solid var(--dim); background: none; color: var(--primary); cursor: pointer; font-size: 0.7rem; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn { padding: 8px 15px; border: 1px solid var(--dim); background: none; color: var(--primary); cursor: pointer; font-size: 0.7rem; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: #000; }
 
         .content-section { display: none; gap: 20px; }
@@ -38,7 +38,7 @@
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
         .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; }
         
-        /* Reproductor Estilo Radio */
+        /* Reproductor Local */
         #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
         audio { height: 35px; width: 100%; filter: invert(1) hue-rotate(45deg); }
     </style>
@@ -48,25 +48,28 @@
 
     <div id="login-page">
         <div class="login-card">
-            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">MASTER_AUTH_V22.5</h2>
+            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SISTEMA_V23</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
-            <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
+            <input type="password" id="pass" class="hacker-input" placeholder="PASSWORD">
             <button class="btn-hack" onclick="autenticar()">ACCEDER</button>
-            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.6rem;" onclick="configAcceso()">CAMBIAR_PASS</button>
+            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.6rem;" onclick="configAcceso()">CAMBIAR_CREDENCIALES</button>
         </div>
     </div>
 
     <div id="main-app">
         <div id="player-vicro">
-            <div style="display:flex; justify-content: space-between; align-items: center;">
-                <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">📻 SELECCIONE UN ÉXITO DEL REY</small>
-            </div>
+            <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">📻 SELECCIONA UN TRACK</small>
             <audio controls id="main-audio"></audio>
-            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); padding: 5px; margin-top:5px;">
+            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); padding: 5px;">
                 <option value="">-- Elige una canción --</option>
-                <option value="https://www.bensound.com/bensound-music/bensound-acousticbreeze.mp3">Mix 01: Tatuajes / Sentimental</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">Mix 02: Secreto de Amor</option>
-                <option value="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3">Mix 03: Lobo Domesticado</option>
+                <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
+                <option value="papasito.mp3">Papasito</option>
+                <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
+                <option value="xclana.mp3">Xclana</option>
+                <option value="vitamina.mp3">Vitamina</option>
+                <option value="debitirarmasfotos.mp3">Debería Tirar Más Fotos</option>
+                <option value="vamospapr.mp3">Vamos Pa PR</option>
+                <option value="titimepregunto.mp3">Tití Me Preguntó</option>
             </select>
         </div>
 
@@ -85,10 +88,10 @@
 
         <div id="sec-vicro-airtm" class="content-section active vicro-only">
             <div class="panel">
-                <small style="color:var(--blue);">[ AIRTM_OPERATIVO ]</small>
+                <small style="color:var(--blue);">[ AIRTM ] - Clic saldo para editar</small>
                 <div class="amount" id="val-airtm" style="color:var(--blue);" onclick="ajustarSaldo('vicro_airtm')">$0.00</div>
                 <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE">
-                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO USD">
+                <input type="number" id="m-air" class="hacker-input" placeholder="MONTO $">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn-hack" style="background:var(--blue); color:black;" onclick="regCajero('INGRESO')">DEPÓSITO</button>
                     <button class="btn-hack" style="background:var(--red); color:white;" onclick="regCajero('GASTO')">RETIRO</button>
@@ -99,14 +102,12 @@
 
         <div id="sec-vicro-cap" class="content-section vicro-only">
             <div class="panel">
-                <small>[ RESERVA_ESTÁTICA ]</small>
+                <small>[ RESERVA_100K ]</small>
                 <div class="amount" id="val-vicro-cap" onclick="ajustarSaldo('vicro_cap')">$0.00</div>
                 <input type="text" id="c-v-cap" class="hacker-input" placeholder="CONCEPTO">
                 <input type="number" id="m-v-cap" class="hacker-input" placeholder="MONTO $">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-hack" onclick="regVicroCap('INGRESO')">SUMAR</button>
-                    <button class="btn-hack" style="background:var(--red); color:white;" onclick="regVicroCap('GASTO')">GASTAR</button>
-                </div>
+                <button class="btn-hack" onclick="regVicroCap('INGRESO')">SUMAR</button>
+                <button class="btn-hack" style="background:var(--red); color:white; margin-top:10px;" onclick="regVicroCap('GASTO')">GASTAR</button>
             </div>
             <div class="panel"><div id="list-v-cap"></div></div>
         </div>
@@ -115,7 +116,7 @@
             <div class="panel">
                 <small style="color:var(--pink);">✨ [ CAJA_KASSY ] ✨</small>
                 <div class="amount" id="val-kassy-caja" style="color:var(--pink);" onclick="ajustarSaldo('kassy_caja')">$0.00</div>
-                <input type="text" id="c-k-caja" class="hacker-input" placeholder="¿EN QUÉ GASTAMOS?">
+                <input type="text" id="c-k-caja" class="hacker-input" placeholder="DETALLE">
                 <input type="number" id="m-k-caja" class="hacker-input" placeholder="MONTO $">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <button class="btn-hack" style="background:var(--pink); color:white;" onclick="regKassyCaja('INGRESO')">AÑADIR</button>
@@ -127,10 +128,9 @@
     </div>
 
     <script>
-        const DB_KEY = 'vicro_final_v225';
-        const AUTH_KEY = 'vicro_auth_v225';
+        const DB_KEY = 'vicro_v23_db';
+        const AUTH_KEY = 'vicro_auth_v23';
         
-        // 1. GESTIÓN DE CREDENCIALES
         let auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {
             vicro: { user: "vicrocrook", pass: "soyelmaster" },
             kassy: { user: "kassy10", pass: "ojitosbonitos" }
@@ -153,22 +153,19 @@
                 document.getElementById('body-tag').classList.add('kassy-mode');
                 iniciar(); 
             }
-            else { alert("DATOS INCORRECTOS"); }
+            else { alert("ERROR"); }
         }
 
         function configAcceso() {
-            let target = prompt("¿Cambiar acceso para quién? (vicro / kassy)").toLowerCase();
-            if(auth[target]) {
-                if(prompt("Clave Maestra (2026):") === "2026") {
-                    let newUser = prompt("Nuevo Usuario:", auth[target].user);
-                    let newPass = prompt("Nuevo Password:", auth[target].pass);
-                    if(newUser && newPass) {
-                        auth[target] = { user: newUser, pass: newPass };
-                        localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-                        alert("LISTO. Reiniciando terminal...");
-                        location.reload();
-                    }
-                } else { alert("ERROR_CLAVE"); }
+            let target = prompt("¿Usuario a cambiar? (vicro / kassy)").toLowerCase();
+            if(auth[target] && prompt("Clave Maestra:") === "2026") {
+                let nu = prompt("Nuevo Usuario:", auth[target].user);
+                let np = prompt("Nuevo Password:", auth[target].pass);
+                if(nu && np) {
+                    auth[target] = { user: nu, pass: np };
+                    localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+                    location.reload();
+                }
             }
         }
 
@@ -186,21 +183,20 @@
             updateUI(); updatePrices();
         }
 
-        // 2. MÚSICA
         function changeTrack() {
             const player = document.getElementById('main-audio');
             const select = document.getElementById('track-list');
-            const trackName = document.getElementById('track-name');
-            player.src = select.value;
-            trackName.innerText = "Reproduciendo: " + select.options[select.selectedIndex].text;
-            if(player.src) player.play();
+            if(select.value) {
+                player.src = select.value;
+                document.getElementById('track-name').innerText = "📻: " + select.options[select.selectedIndex].text;
+                player.play();
+            }
         }
 
-        // 3. DATOS & EXCEL
         function descargarExcel() {
             let data = [];
             let target = currentUser === 'vicro' ? ['vicro_airtm', 'vicro_cap'] : ['kassy_caja'];
-            target.forEach(sec => db[sec].logs.forEach(l => data.push({ Caja: sec, Item: l.concepto, Valor: l.monto, Tipo: l.tipo })));
+            target.forEach(sec => db[sec].logs.forEach(l => data.push({ Seccion: sec, Detalle: l.concepto, Monto: l.monto, Tipo: l.tipo })));
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Backup");
@@ -219,7 +215,7 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.vicro_airtm.saldo += m : db.vicro_airtm.saldo -= m;
             db.vicro_airtm.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save(); document.getElementById('c-air').value = ""; document.getElementById('m-air').value = "";
+            save();
         }
 
         function regVicroCap(tipo) {
@@ -227,15 +223,15 @@
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.vicro_cap.saldo += m : db.vicro_cap.saldo -= m;
             db.vicro_cap.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save(); document.getElementById('c-v-cap').value = ""; document.getElementById('m-v-cap').value = "";
+            save();
         }
 
         function regKassyCaja(tipo) {
             const c = document.getElementById('c-k-caja').value, m = parseFloat(document.getElementById('m-k-caja').value);
             if(!c || isNaN(m)) return;
             tipo === 'INGRESO' ? db.kassy_caja.saldo += m : db.kassy_caja.saldo -= m;
-            db.kassy_caja.logs.push({ id: Date.now(), concepto: "💖 " + c.toUpperCase(), monto: m, tipo });
-            save(); document.getElementById('c-k-caja').value = ""; document.getElementById('m-k-caja').value = "";
+            db.kassy_caja.logs.push({ id: Date.now(), concepto: "✨ " + c.toUpperCase(), monto: m, tipo });
+            save();
         }
 
         function eliminar(sec, id) {
@@ -267,34 +263,5 @@
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active');
-        }
 
-        async function updatePrices() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-                const data = await res.json();
-                document.getElementById('btc-price').innerText = `$${data.bitcoin.usd.toLocaleString()}`;
-                document.getElementById('eth-price').innerText = `$${data.ethereum.usd.toLocaleString()}`;
-            } catch(e){}
-        }
-
-        const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resize; resize();
-        let stars = Array(150).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, z: Math.random()*canvas.width}));
-        function anim() {
-            ctx.fillStyle = "rgba(0,0,0,0.15)"; ctx.fillRect(0,0,canvas.width, canvas.height);
-            ctx.fillStyle = (currentUser === "kassy") ? "#ff69b4" : "#00ff41";
-            stars.forEach(s => {
-                s.z -= 4; if(s.z<=0) s.z=canvas.width;
-                let sx = (s.x-canvas.width/2)*(canvas.width/s.z)+canvas.width/2;
-                let sy = (s.y-canvas.height/2)*(canvas.width/s.z)+canvas.height/2;
-                ctx.beginPath(); ctx.arc(sx, sy, (canvas.width/s.z), 0, Math.PI*2); ctx.fill();
-            });
-            requestAnimationFrame(anim);
-        }
-        anim();
-    </script>
-</body>
-</html>
 
