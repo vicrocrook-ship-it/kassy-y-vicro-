@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | V23.5</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>VICRO & KASSY | BIOMETRIC TERMINAL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.95);
+            --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.98);
             --red: #ff3333; --blue: #00ccff; --pink: #ff69b4;
             --text: var(--primary); --dim: #004400; --gold: #ffcc00;
         }
@@ -16,11 +15,31 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
 
-        /* Login */
+        /* --- EFECTO ESCÁNER BIOMÉTRICO --- */
+        #biometric-overlay {
+            position: fixed; inset: 0; z-index: 3000; 
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        .scanner-bar {
+            width: 100%; height: 4px; background: var(--primary);
+            position: absolute; top: 0;
+            box-shadow: 0 0 20px var(--primary);
+            animation: scanLine 2s linear infinite;
+        }
+        @keyframes scanLine {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+        .bio-text { font-size: 0.8rem; letter-spacing: 5px; margin-top: 20px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* Login UI */
         #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
-        .login-card { text-align: center; width: 90%; max-width: 360px; border: 1px solid var(--primary); padding: 40px; background: #000; box-shadow: 0 0 30px var(--primary); }
-        .hacker-input { width: 100%; background: #000; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
-        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
+        .login-card { text-align: center; width: 90%; max-width: 380px; border: 1px solid var(--primary); padding: 40px; background: #000; box-shadow: 0 0 30px var(--dim); border-radius: 5px; }
+        .hacker-input { width: 100%; background: transparent; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 15px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
+        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
 
         /* App Layout */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
@@ -34,7 +53,7 @@
         @media (min-width: 850px) { .content-section.active { display: grid; grid-template-columns: 1.2fr 1fr; height: calc(100vh - 350px); } }
 
         .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; overflow-y: auto; border-radius: 5px; }
-        .amount { font-size: 2.2rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
+        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
         
         #player-vicro { background: #111; border: 1px solid var(--gold); padding: 10px; border-radius: 5px; margin-bottom: 10px; }
@@ -44,36 +63,36 @@
 <body id="body-tag">
     <canvas id="canvas-bg"></canvas>
 
+    <div id="biometric-overlay">
+        <div class="scanner-bar"></div>
+        <div class="bio-text" id="bio-msg">ANALIZANDO_BIOMETRÍA_RETINAL...</div>
+    </div>
+
     <div id="login-page">
         <div class="login-card">
-            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SYSTEM_ACCESS_V23.5</h2>
-            <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
-            <input type="password" id="pass" class="hacker-input" placeholder="PASSWORD">
-            <button class="btn-hack" onclick="autenticar()">IDENTIFICARSE</button>
-            <button class="btn-hack" style="background:none; color:var(--gold); border:1px solid var(--gold); font-size:0.5rem;" onclick="configAcceso()">CONFIG_PASS</button>
+            <h2 style="letter-spacing: 5px; font-size: 0.8rem; margin-bottom: 20px;">SECURITY_KERNEL_v26</h2>
+            <input type="text" id="user" class="hacker-input" placeholder="IDENTITY_USER">
+            <input type="password" id="pass" class="hacker-input" placeholder="ACCESS_PASS">
+            <button class="btn-hack" onclick="iniciarEscaneo()">IDENTIFICAR</button>
         </div>
     </div>
 
     <div id="main-app">
         <div id="player-vicro">
-            <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">📻 REPRODUCTOR LISTO</small>
+            <small id="track-name" style="font-size: 0.6rem; color: var(--gold)">AUDIO_READY</small>
             <audio controls id="main-audio"></audio>
-            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); width: 100%; margin-top:5px;">
-                <option value="">-- Escoger Canción --</option>
+            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); font-size:0.7rem; border:1px solid var(--dim); width: 100%; margin-top:5px; padding:5px;">
+                <option value="">-- Elige un Track --</option>
                 <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
                 <option value="papasito.mp3">Papasito</option>
                 <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
-                <option value="xclana.mp3">Xclana</option>
-                <option value="vitamina.mp3">Vitamina</option>
-                <option value="debitirarmasfotos.mp3">Debería Tirar Más Fotos</option>
-                <option value="vamospapr.mp3">Vamos Pa PR</option>
                 <option value="titimepregunto.mp3">Tití Me Preguntó</option>
             </select>
         </div>
 
         <div class="header">
             <div style="font-size:0.6rem; color:#ffcc00">
-                BTC: <span id="btc-price">...</span> | <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer;">EXCEL</button>
+                <button onclick="descargarExcel()" style="background:none; border:1px solid #ffcc00; color:#ffcc00; cursor:pointer; padding: 2px 5px;">EXCEL_EXPORT</button>
             </div>
             <button class="btn-hack" style="width: auto; padding: 5px 15px; font-size: 0.6rem; background: var(--red); color: white;" onclick="location.reload()">LOGOUT</button>
         </div>
@@ -90,20 +109,8 @@
                 <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE">
                 <input type="number" id="m-air" class="hacker-input" placeholder="MONTO">
                 <button class="btn-hack" style="background:var(--blue); color:black;" onclick="regCajero('INGRESO')">DEPÓSITO</button>
-                <button class="btn-hack" style="background:var(--red); color:white;" onclick="regCajero('GASTO')">RETIRO</button>
             </div>
             <div class="panel"><div id="list-air"></div></div>
-        </div>
-
-        <div id="sec-vicro-cap" class="content-section vicro-only">
-            <div class="panel">
-                <div class="amount" id="val-vicro-cap" onclick="ajustarSaldo('vicro_cap')">$0.00</div>
-                <input type="text" id="c-v-cap" class="hacker-input" placeholder="CONCEPTO">
-                <input type="number" id="m-v-cap" class="hacker-input" placeholder="VALOR">
-                <button class="btn-hack" onclick="regVicroCap('INGRESO')">SUMAR</button>
-                <button class="btn-hack" style="background:var(--red); color:white;" onclick="regVicroCap('GASTO')">RESTAR</button>
-            </div>
-            <div class="panel"><div id="list-v-cap"></div></div>
         </div>
 
         <div id="sec-kassy-caja" class="content-section kassy-only">
@@ -119,46 +126,44 @@
     </div>
 
     <script>
-        const DB_KEY = 'vicro_v23_db';
-        const AUTH_KEY = 'vicro_auth_v23';
-        
-        let auth = JSON.parse(localStorage.getItem(AUTH_KEY)) || {
-            vicro: { user: "vicrocrook", pass: "soyelmaster" },
-            kassy: { user: "kassy10", pass: "ojitosbonitos" }
-        };
-
+        const DB_KEY = 'db_vicro_kassy_final';
+        let currentUser = "";
         let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
             vicro_airtm: { saldo: 2000, logs: [] },
             vicro_cap: { saldo: 100000, logs: [] },
             kassy_caja: { saldo: 0, logs: [] }
         };
 
-        let currentUser = "";
-
-        function autenticar() {
+        // --- LÓGICA DEL ESCÁNER ---
+        function iniciarEscaneo() {
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
-            if(u === auth.vicro.user && p === auth.vicro.pass) { currentUser = "vicro"; entrar(); }
-            else if(u === auth.kassy.user && p === auth.kassy.pass) { 
-                currentUser = "kassy"; 
-                document.getElementById('body-tag').classList.add('kassy-mode');
-                entrar(); 
-            } else { alert("ERROR DE DATOS"); }
-        }
 
-        function configAcceso() {
-            let target = prompt("¿Vicro o Kassy?").toLowerCase();
-            if(auth[target] && prompt("Clave Maestra:") === "2026") {
-                auth[target].user = prompt("Nuevo Usuario:", auth[target].user);
-                auth[target].pass = prompt("Nuevo Password:", auth[target].pass);
-                localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
-                location.reload();
+            if((u === "vicrocrook" && p === "soyelmaster") || (u === "kassy10" && p === "ojitosbonitos")) {
+                currentUser = (u === "vicrocrook") ? "vicro" : "kassy";
+                
+                // Mostrar escáner
+                document.getElementById('biometric-overlay').style.display = 'flex';
+                
+                setTimeout(() => {
+                    document.getElementById('bio-msg').innerText = "IDENTIDAD_CONFIRMADA_ACCEDIENDO...";
+                    document.getElementById('bio-msg').style.color = (currentUser === 'vicro') ? '#00ff41' : '#ff69b4';
+                    
+                    setTimeout(() => {
+                        document.getElementById('biometric-overlay').style.display = 'none';
+                        document.getElementById('login-page').style.display = 'none';
+                        showApp();
+                    }, 1500);
+                }, 2500);
+            } else {
+                alert("ACCESO DENEGADO");
             }
         }
 
-        function entrar() {
-            document.getElementById('login-page').style.display = 'none';
+        function showApp() {
             document.getElementById('main-app').style.display = 'flex';
+            if(currentUser === "kassy") document.getElementById('body-tag').classList.add('kassy-mode');
+            
             if(currentUser === "vicro") {
                 document.querySelectorAll('.vicro-only').forEach(e => e.style.display = (e.tagName==='BUTTON'?'block':'flex'));
                 document.querySelectorAll('.kassy-only').forEach(e => e.style.display = 'none');
@@ -167,7 +172,7 @@
                 document.querySelectorAll('.kassy-only').forEach(e => e.style.display = (e.tagName==='BUTTON'?'block':'flex'));
                 document.getElementById('sec-kassy-caja').classList.add('active');
             }
-            updateUI(); updatePrices();
+            updateUI();
         }
 
         function changeTrack() {
@@ -180,18 +185,8 @@
             }
         }
 
-        function descargarExcel() {
-            let data = [];
-            let target = currentUser === 'vicro' ? ['vicro_airtm', 'vicro_cap'] : ['kassy_caja'];
-            target.forEach(sec => db[sec].logs.forEach(l => data.push({ Seccion: sec, Detalle: l.concepto, Monto: l.monto, Tipo: l.tipo })));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Respaldo");
-            XLSX.writeFile(wb, `Respaldo_${currentUser}.xlsx`);
-        }
-
         function ajustarSaldo(sec) {
-            let v = prompt("SALDO ACTUAL:", db[sec].saldo);
+            let v = prompt("VALOR ACTUAL:", db[sec].saldo);
             if(v !== null && !isNaN(v)) { db[sec].saldo = parseFloat(v); save(); }
         }
 
@@ -200,36 +195,23 @@
         function regCajero(tipo) {
             const c = document.getElementById('c-air').value, m = parseFloat(document.getElementById('m-air').value);
             if(!c || isNaN(m)) return;
-            tipo === 'INGRESO' ? db.vicro_airtm.saldo += m : db.vicro_airtm.saldo -= m;
+            db.vicro_airtm.saldo += (tipo === 'INGRESO' ? m : -m);
             db.vicro_airtm.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save(); document.getElementById('c-air').value = ""; document.getElementById('m-air').value = "";
-        }
-
-        function regVicroCap(tipo) {
-            const c = document.getElementById('c-v-cap').value, m = parseFloat(document.getElementById('m-v-cap').value);
-            if(!c || isNaN(m)) return;
-            tipo === 'INGRESO' ? db.vicro_cap.saldo += m : db.vicro_cap.saldo -= m;
-            db.vicro_cap.logs.push({ id: Date.now(), concepto: c.toUpperCase(), monto: m, tipo });
-            save(); document.getElementById('c-v-cap').value = ""; document.getElementById('m-v-cap').value = "";
+            save();
         }
 
         function regKassyCaja(tipo) {
             const c = document.getElementById('c-k-caja').value, m = parseFloat(document.getElementById('m-k-caja').value);
             if(!c || isNaN(m)) return;
-            tipo === 'INGRESO' ? db.kassy_caja.saldo += m : db.kassy_caja.saldo -= m;
+            db.kassy_caja.saldo += (tipo === 'INGRESO' ? m : -m);
             db.kassy_caja.logs.push({ id: Date.now(), concepto: "✨ " + c.toUpperCase(), monto: m, tipo });
-            save(); document.getElementById('c-k-caja').value = ""; document.getElementById('m-k-caja').value = "";
-        }
-
-        function eliminar(sec, id) {
-            if(prompt("PASS (2026):") === "2026") { db[sec].logs = db[sec].logs.filter(l => l.id !== id); save(); }
+            save();
         }
 
         function updateUI() {
             if(currentUser === "vicro") {
                 document.getElementById('val-airtm').innerText = `$${db.vicro_airtm.saldo.toLocaleString()}`;
-                document.getElementById('val-vicro-cap').innerText = `$${db.vicro_cap.saldo.toLocaleString()}`;
-                renderLogs('vicro_airtm', 'list-air'); renderLogs('vicro_cap', 'list-v-cap');
+                renderLogs('vicro_airtm', 'list-air');
             } else {
                 document.getElementById('val-kassy-caja').innerText = `$${db.kassy_caja.saldo.toLocaleString()}`;
                 renderLogs('kassy_caja', 'list-k-caja');
@@ -239,7 +221,7 @@
         function renderLogs(sec, listId) {
             const cont = document.getElementById(listId); cont.innerHTML = "";
             [...db[sec].logs].reverse().forEach(l => {
-                cont.innerHTML += `<div class="log-item"><div><b>${l.concepto}</b></div><div>$${l.monto.toLocaleString()} <span onclick="eliminar('${sec}', ${l.id})" style="cursor:pointer;color:red">X</span></div></div>`;
+                cont.innerHTML += `<div class="log-item"><b>${l.concepto}</b> <span>$${l.monto.toLocaleString()}</span></div>`;
             });
         }
 
@@ -247,15 +229,6 @@
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active'); btn.classList.add('active');
-        }
-
-        async function updatePrices() {
-            try {
-                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-                const data = await res.json();
-                document.getElementById('btc-price').innerText = `$${data.bitcoin.usd.toLocaleString()}`;
-                document.getElementById('eth-price').innerText = `$${data.ethereum.usd.toLocaleString()}`;
-            } catch(e){}
         }
 
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
@@ -277,3 +250,4 @@
     </script>
 </body>
 </html>
+
