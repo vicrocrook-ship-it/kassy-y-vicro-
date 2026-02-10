@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO & KASSY | OMEGA GATE v30.0</title>
+    <title>OMEGA CLOUD | CONTROL TOTAL v30.5</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.98);
@@ -27,9 +27,6 @@
         .hacker-input { width: 100%; background: transparent; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; }
         .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-bottom: 5px; }
 
-        #color-selector { display: none; margin-bottom: 15px; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-        .color-opt { height: 25px; border: 1px solid #fff; cursor: pointer; }
-
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 15px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--dim); padding-bottom: 10px; margin-bottom: 10px; font-size: 0.7rem; }
         .content-grid { display: grid; grid-template-columns: 1fr; gap: 15px; overflow-y: auto; }
@@ -38,10 +35,10 @@
         .panel { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 5px; margin-bottom: 15px; }
         .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; cursor: pointer; }
         .log-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 0.7rem; }
-        .del-btn { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 2px 5px; }
-
-        .alert-box { background: var(--red); color: white; padding: 10px; margin-bottom: 10px; font-size: 0.7rem; cursor: pointer; animation: pulse 1s infinite; text-align: center; display: none; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        #radar-ops { font-size: 0.6rem; color: var(--gold); margin-bottom: 10px; padding: 10px; border: 1px solid var(--gold); border-radius: 5px; display: none; }
+        .op-status { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .expulsar-btn { color: var(--red); border: 1px solid var(--red); padding: 1px 4px; cursor: pointer; font-size: 0.5rem; }
 
         #player-vicro { background: #111; border: 1px solid var(--primary); padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         audio { height: 30px; width: 100%; filter: invert(1); margin-top: 5px; }
@@ -52,25 +49,17 @@
 
     <div id="biometric-overlay">
         <div class="scanner-bar"></div>
-        <div id="bio-msg">ESTABLECIENDO_CONEXIÓN_SEGURA...</div>
+        <div id="bio-msg">ESTABLECIENDO_CORE_DATA...</div>
     </div>
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="login-title">OMEGA_CLOUD_v30</h2>
+            <h2 id="login-title">OMEGA_CLOUD_v30.5</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            
-            <div id="color-selector">
-                <div class="color-opt" style="background: #00ff41" onclick="selectColor('vicro-theme')"></div>
-                <div class="color-opt" style="background: #ff69b4" onclick="selectColor('kassy-theme')"></div>
-                <div class="color-opt" style="background: #00ccff" onclick="selectColor('user-blue')"></div>
-                <div class="color-opt" style="background: #ffcc00" onclick="selectColor('user-gold')"></div>
-            </div>
-
             <button id="btn-main" class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
             <div style="margin-top:10px; display: flex; flex-direction: column; gap: 5px;">
-                <button id="btn-toggle" onclick="toggleAuthMode()" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:0.6rem;">[ REGISTRAR_NUEVO_ACCESO_VICRO ]</button>
+                <button onclick="toggleAuthMode()" id="btn-reg-mode" style="background:none; border:none; color:var(--blue); cursor:pointer; font-size:0.6rem;">[ REGISTRAR_NUEVO_ACCESO ]</button>
                 <button onclick="configAcceso()" style="background:none; border:none; color:var(--gold); cursor:pointer; font-size:0.5rem;">[ AJUSTES_GLOBALES ]</button>
             </div>
         </div>
@@ -79,26 +68,34 @@
     <div id="main-app">
         <div class="header">
             <span id="display-user"></span>
-            <span id="sync-indicator">● ONLINE</span>
-            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding: 2px 10px; cursor:pointer;">CERRAR</button>
+            <span id="sync-indicator">● SYNC_ACTIVE</span>
+            <button onclick="cerrarSesion()" style="background:var(--red); color:white; border:none; padding: 2px 10px; cursor:pointer;">CERRAR</button>
         </div>
 
-        <div id="admin-alert" class="alert-box" onclick="abrirAprobaciones()">⚠️ HAY SOLICITUDES DE ACCESO PENDIENTES [REVISAR]</div>
+        <div id="radar-ops">
+            <strong>RADAR_OPERADORES_ONLINE:</strong>
+            <div id="listado-radar"></div>
+        </div>
 
         <div id="player-vicro">
-            <div style="display:flex; gap:5px;">
-                <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); flex-grow:1; border:1px solid var(--dim);">
-                    <option value="">-- MÚSICA --</option>
-                </select>
-                <button onclick="addMusic()" style="background:var(--primary); border:none; padding:0 10px; font-weight:bold;">+</button>
-            </div>
+            <select id="track-list" onchange="changeTrack()" style="background:#000; color:var(--primary); width:100%; border:1px solid var(--dim); padding:5px;">
+                <option value="">-- SELECCIONAR MÚSICA --</option>
+                <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
+                <option value="papasito.mp3">Papasito</option>
+                <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
+                <option value="titimepregunto.mp3">Tití Me Preguntó</option>
+                <option value="m5.mp3">Música 5</option>
+                <option value="m6.mp3">Música 6</option>
+                <option value="m7.mp3">Música 7</option>
+                <option value="m8.mp3">Música 8</option>
+            </select>
             <audio controls id="main-audio"></audio>
         </div>
 
         <div class="content-grid">
             <div class="panel" id="panel-controls"></div>
             <div class="panel">
-                <small>[ HISTORIAL_VICRO ]</small>
+                <small>[ HISTORIAL_TRANSACCIONES ]</small>
                 <div id="panel-logs"></div>
             </div>
         </div>
@@ -110,20 +107,18 @@
 
         let db = {
             auth: {
-                vicrocrook: { user: "vicrocrook", pass: "soyelmaster", theme: "vicro-theme", access: "vicro", active: true },
-                kassy10: { user: "kassy10", pass: "ojitosbonitos", theme: "kassy-theme", access: "kassy", active: true }
+                vicrocrook: { user: "vicrocrook", pass: "soyelmaster", theme: "vicro-theme", access: "vicro", active: true, lastSeen: 0 },
+                kassy10: { user: "kassy10", pass: "ojitosbonitos", theme: "kassy-theme", access: "kassy", active: true, lastSeen: 0 }
             },
             data: {
                 vicro_airtm: { saldo: 0, logs: [] },
                 vicro_cap: { saldo: 0, logs: [] },
                 kassy_caja: { saldo: 0, logs: [] }
-            },
-            playlist: []
+            }
         };
 
         let currentUser = "";
         let isRegisterMode = false;
-        let selectedTheme = "vicro-theme";
 
         async function syncCloud(push = false) {
             try {
@@ -140,38 +135,44 @@
                     const data = await res.json();
                     if(data.auth) db = data;
                 }
-                updatePlaylistUI();
-                checkPendingUsers();
-            } catch (e) { console.error("Sync error"); }
+                if(currentUser) refreshRadar();
+            } catch (e) { console.error("Error sincronización"); }
         }
 
-        function checkPendingUsers() {
-            if(currentUser !== "vicrocrook") return;
-            const pendings = Object.values(db.auth).filter(u => u.active === false);
-            document.getElementById('admin-alert').style.display = pendings.length > 0 ? 'block' : 'none';
-        }
-
-        async function abrirAprobaciones() {
-            const pendings = Object.values(db.auth).filter(u => u.active === false);
-            let msg = "OPERADORES ESPERANDO:\n";
-            pendings.forEach(u => msg += `- ${u.user}\n`);
-            let target = prompt(msg + "\nEscriba el nombre para APROBAR o cancelar:");
-            
-            if(target && db.auth[target.toLowerCase()]) {
-                db.auth[target.toLowerCase()].active = true;
+        // Heartbeat cada 30 segundos
+        setInterval(async () => {
+            if(currentUser) {
+                db.auth[currentUser].lastSeen = Date.now();
                 await syncCloud(true);
-                alert("OPERADOR ACTIVADO");
-                checkPendingUsers();
+            }
+        }, 30000);
+
+        function refreshRadar() {
+            if(currentUser !== "vicrocrook") return;
+            const radar = document.getElementById('radar-ops');
+            const listado = document.getElementById('listado-radar');
+            radar.style.display = 'block';
+            listado.innerHTML = "";
+
+            const ahora = Date.now();
+            Object.values(db.auth).forEach(u => {
+                const online = (ahora - u.lastSeen) < 65000;
+                if(u.user === currentUser) return;
+                listado.innerHTML += `
+                    <div class="op-status">
+                        <span>${u.user.toUpperCase()} [${online ? 'ONLINE' : 'OFFLINE'}]</span>
+                        <span class="expulsar-btn" onclick="expulsar('${u.user}')">EXPULSAR</span>
+                    </div>`;
+            });
+        }
+
+        async function expulsar(user) {
+            if(prompt("Confirmar Master Key para expulsión:") === "2026") {
+                db.auth[user].active = false;
+                await syncCloud(true);
+                alert("USUARIO EXPULSADO Y BLOQUEADO.");
             }
         }
-
-        function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
-            document.getElementById('color-selector').style.display = isRegisterMode ? 'grid' : 'none';
-            document.getElementById('btn-main').innerText = isRegisterMode ? 'ENVIAR SOLICITUD' : 'ACCEDER';
-        }
-
-        function selectColor(t) { selectedTheme = t; document.body.className = t; }
 
         async function iniciarEscaneo() {
             const u = document.getElementById('user').value.trim().toLowerCase();
@@ -180,51 +181,31 @@
             await syncCloud();
 
             if (isRegisterMode) {
-                if (db.auth[u]) { alert("USUARIO EXISTENTE"); }
+                if (db.auth[u]) alert("EXISTENTE");
                 else {
-                    db.auth[u] = { user: u, pass: p, theme: selectedTheme, access: "vicro", active: false };
+                    db.auth[u] = { user: u, pass: p, theme: "user-blue", access: "vicro", active: false, lastSeen: 0 };
                     await syncCloud(true);
-                    alert("SOLICITUD ENVIADA. ESPERA A QUE VICRO TE APRUEBE.");
+                    alert("SOLICITUD ENVIADA A VICRO.");
                     toggleAuthMode();
                 }
-                document.getElementById('biometric-overlay').style.display = 'none';
-                return;
-            }
-
-            if (db.auth[u] && db.auth[u].pass === p) {
-                if(db.auth[u].active === false) {
-                    alert("ACCESO BLOQUEADO: Esperando aprobación de Vicro.");
+            } else if (db.auth[u] && db.auth[u].pass === p) {
+                if(!db.auth[u].active) {
+                    alert("ACCESO DENEGADO: Usuario no aprobado o expulsado.");
                 } else {
                     currentUser = u;
-                    document.body.className = db.auth[u].theme;
+                    db.auth[u].lastSeen = Date.now();
+                    document.body.className = db.auth[u].theme || 'vicro-theme';
                     document.getElementById('login-page').style.display = 'none';
                     showApp();
                 }
-            } else { alert("DATOS INCORRECTOS"); }
+            } else { alert("ERROR"); }
             document.getElementById('biometric-overlay').style.display = 'none';
-        }
-
-        async function configAcceso() {
-            let target = prompt("Usuario a modificar:").toLowerCase();
-            if(db.auth[target] && prompt("Master Key:") === "2026") {
-                db.auth[target].user = prompt("Nuevo nombre:", db.auth[target].user);
-                db.auth[target].pass = prompt("Nueva pass:", db.auth[target].pass);
-                await syncCloud(true);
-                alert("ACTUALIZADO");
-            }
         }
 
         function showApp() {
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
             updateUI();
-            checkPendingUsers();
-        }
-
-        function updatePlaylistUI() {
-            const list = document.getElementById('track-list');
-            list.innerHTML = '<option value="">-- MÚSICA --</option>';
-            db.playlist.forEach(t => list.add(new Option(t.name, t.file)));
         }
 
         function updateUI() {
@@ -242,6 +223,7 @@
         }
 
         function renderNodo(parent, id, title, color) {
+            if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
             parent.innerHTML += `
                 <div style="margin-bottom: 20px;">
                     <small style="color:${color}">[ ${title} ]</small>
@@ -261,7 +243,8 @@
             if(!det || isNaN(mon)) return;
             db.data[sec].saldo += (tipo === 'INGRESO' ? mon : -mon);
             db.data[sec].logs.push({ id: Date.now(), concepto: det.toUpperCase(), monto: mon, tipo, op: currentUser });
-            updateUI(); await syncCloud(true);
+            updateUI(); 
+            await syncCloud(true); // Persistencia inmediata
         }
 
         function renderLogs(sec) {
@@ -269,8 +252,8 @@
             cont.innerHTML = "";
             [...db.data[sec].logs].reverse().forEach(l => {
                 cont.innerHTML += `<div class="log-item">
-                    <div><b>${l.concepto}</b><br><small>POR: ${l.op || 'ADMIN'}</small></div>
-                    <div>$${l.monto.toLocaleString()} <span class="del-btn" onclick="eliminarLog('${sec}', ${l.id})">X</span></div>
+                    <div><b>${l.concepto}</b><br><small>POR: ${l.op || 'SISTEMA'}</small></div>
+                    <div>$${l.monto.toLocaleString()} <span style="color:red;cursor:pointer" onclick="eliminarLog('${sec}', ${l.id})">X</span></div>
                 </div>`;
             });
         }
@@ -295,12 +278,13 @@
             if(p.src) p.play();
         }
 
-        async function addMusic() {
-            const n = prompt("Nombre:"), f = prompt("Archivo .mp3:");
-            if(n && f) { db.playlist.push({name:n, file:f}); await syncCloud(true); }
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('btn-main').innerText = isRegisterMode ? 'ENVIAR SOLICITUD' : 'ACCEDER';
         }
 
-        // Animación de fondo
+        function cerrarSesion() { location.reload(); }
+
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         window.onresize = resize; resize();
