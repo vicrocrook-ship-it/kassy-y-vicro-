@@ -1,334 +1,768 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OMEGA CLOUD v32</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>OMEGA CLOUD | VICRO CONTROL v30.9 (HACK UI)</title>
 
-<style>
-:root{
---primary:#00ff41;
---dim:#004400;
---blue:#00ccff;
---pink:#ff69b4;
---red:#ff3333;
---gold:#ffcc00;
-}
+  <style>
+    :root{
+      --primary:#00ff41; --bg:#000; --card:rgba(15,15,15,0.98);
+      --red:#ff3333; --blue:#00ccff; --pink:#ff69b4;
+      --text:var(--primary); --dim:#004400; --gold:#ffcc00;
+      --shadow: 0 0 22px rgba(0,255,65,0.25);
+    }
+    body.vicro-theme{ --primary:#00ff41; --dim:#004400; --shadow:0 0 22px rgba(0,255,65,0.25); }
+    body.kassy-theme{ --primary:var(--pink); --dim:#440022; --shadow:0 0 22px rgba(255,105,180,0.22); }
 
-body{
-margin:0;
-background:#000;
-font-family:'Courier New',monospace;
-color:var(--primary);
-}
+    /* Mejor para móviles (100vh real) */
+    html,body{ margin:0; padding:0; width:100%; height:100%; background:#000; font-family:'Courier New', monospace; color:var(--primary); }
+    body{ overflow:hidden; }
+    .app-h{ min-height: 100dvh; }
 
-#login-page{
-position:fixed;
-inset:0;
-display:flex;
-justify-content:center;
-align-items:center;
-}
+    #canvas-bg{ position:fixed; inset:0; z-index:-3; }
 
-.login-card{
-width:90%;
-max-width:380px;
-padding:30px;
-border:1px solid var(--primary);
-background:#000;
-box-shadow:0 0 25px var(--primary);
-text-align:center;
-}
+    /* Scanlines + glow */
+    .scanlines{
+      pointer-events:none;
+      position:fixed; inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.03) 0px,
+        rgba(255,255,255,0.03) 1px,
+        rgba(0,0,0,0.0) 2px,
+        rgba(0,0,0,0.0) 6px
+      );
+      mix-blend-mode: overlay;
+      opacity:0.22;
+      z-index:-2;
+    }
+    .vignette{
+      pointer-events:none;
+      position:fixed; inset:-40px;
+      background: radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.75) 70%, rgba(0,0,0,0.95) 100%);
+      z-index:-2;
+    }
 
-.hacker-input{
-width:100%;
-background:transparent;
-border:1px solid var(--dim);
-padding:10px;
-color:var(--primary);
-margin-bottom:10px;
-text-align:center;
-}
+    /* Matrix overlay suave */
+    #matrix{
+      pointer-events:none;
+      position:fixed; inset:0;
+      opacity:0.10;
+      z-index:-2;
+      filter: blur(0.2px);
+    }
 
-.btn-hack{
-width:100%;
-background:var(--primary);
-color:#000;
-border:none;
-padding:10px;
-font-weight:bold;
-cursor:pointer;
-}
+    /* LOGIN */
+    #login-page{
+      position:fixed; inset:0; z-index:2000; background:#000;
+      display:flex; justify-content:center; align-items:center;
+      padding:16px;
+      box-sizing:border-box;
+    }
+    .login-shell{
+      width:min(420px, 100%);
+      position:relative;
+    }
+    .login-card{
+      text-align:center;
+      border:1px solid var(--primary);
+      padding:22px 18px;
+      background: rgba(0,0,0,0.88);
+      box-shadow: var(--shadow), 0 0 60px var(--dim);
+      border-radius: 12px;
+      overflow:hidden;
+    }
+    .login-card:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: linear-gradient(120deg, transparent 10%, rgba(255,255,255,0.06), transparent 40%);
+      transform: translateX(-80%);
+      animation: sweep 3.2s infinite;
+      pointer-events:none;
+    }
+    @keyframes sweep{
+      0%{ transform: translateX(-90%); opacity:0.0; }
+      25%{ opacity:0.35; }
+      50%{ transform: translateX(90%); opacity:0.0; }
+      100%{ transform: translateX(90%); opacity:0.0; }
+    }
 
-#main-app{
-display:none;
-padding:15px;
-}
+    .brand{
+      font-weight:900;
+      letter-spacing:1px;
+      margin:0 0 10px;
+      text-shadow: 0 0 12px rgba(0,255,65,0.25);
+    }
 
-.header{
-display:flex;
-justify-content:space-between;
-border-bottom:1px solid var(--dim);
-padding-bottom:10px;
-margin-bottom:15px;
-}
+    .typebar{
+      font-size:0.72rem;
+      opacity:0.9;
+      border:1px solid var(--dim);
+      padding:8px 10px;
+      border-radius:10px;
+      margin:0 0 14px;
+      background: rgba(0,0,0,0.6);
+      text-align:left;
+      min-height: 18px;
+      box-shadow: inset 0 0 18px rgba(0,0,0,0.6);
+    }
+    .caret{
+      display:inline-block;
+      width:8px;
+      margin-left:6px;
+      background:var(--primary);
+      height:14px;
+      transform: translateY(2px);
+      animation: blink 0.9s infinite;
+    }
+    @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
 
-.node-card{
-border:1px solid var(--dim);
-padding:15px;
-margin-bottom:15px;
-}
+    .hacker-input{
+      width:100%;
+      background: transparent;
+      border:1px solid var(--dim);
+      padding:14px 12px;
+      color: var(--primary);
+      outline:none;
+      margin-bottom:12px;
+      text-align:center;
+      box-sizing:border-box;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    .hacker-input:focus{
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,255,65,0.12);
+    }
 
-.amount{
-font-size:2rem;
-margin:10px 0;
-cursor:pointer;
-}
+    .btn-hack{
+      width:100%;
+      background: var(--primary);
+      color:#000;
+      border:none;
+      padding:14px 12px;
+      font-weight:900;
+      cursor:pointer;
+      text-transform:uppercase;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      letter-spacing: 0.6px;
+    }
+    .btn-hack:active{ transform: translateY(1px); }
 
-audio{
-width:100%;
-margin-top:8px;
-}
-</style>
+    .login-actions{
+      margin-top:12px;
+      font-size:0.7rem;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .linkish{
+      cursor:pointer;
+      user-select:none;
+      padding:6px 8px;
+      border-radius: 8px;
+      border:1px solid transparent;
+    }
+    .linkish:hover{ border-color: var(--dim); background: rgba(255,255,255,0.03); }
+
+    /* APP */
+    #main-app{
+      display:none;
+      height:100dvh;
+      flex-direction:column;
+      padding:10px;
+      box-sizing:border-box;
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px;
+      border-bottom:1px solid var(--dim);
+      font-size:0.78rem;
+      gap:8px;
+      position: sticky;
+      top: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    #sync-status{ font-weight:900; }
+
+    .content-grid{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    @media (min-width: 900px){
+      .content-grid{ display:grid; grid-template-columns:1fr 1fr; align-items:start; }
+    }
+
+    .panel{
+      background: rgba(15,15,15,0.92);
+      border:1px solid var(--dim);
+      padding:14px;
+      border-radius:12px;
+      box-shadow: 0 0 18px rgba(0,0,0,0.4);
+    }
+
+    /* Música */
+    #player-vicro{
+      background:#0a0a0a;
+      border:1px solid var(--primary);
+      padding:10px;
+      margin-bottom:10px;
+      border-radius:12px;
+      box-shadow: var(--shadow);
+    }
+    #track-list{
+      width:100%;
+      background:#000;
+      color:var(--primary);
+      border:1px solid var(--dim);
+      padding:10px;
+      border-radius:10px;
+    }
+    audio{ width:100%; height:32px; filter: invert(1); margin-top:8px; }
+
+    .node-card{
+      border:1px solid var(--dim);
+      padding:14px;
+      margin-bottom:12px;
+      background: rgba(0,0,0,0.45);
+      border-radius: 12px;
+    }
+    .amount{
+      font-size:2.0rem;
+      font-weight:900;
+      margin:10px 0;
+      cursor:pointer;
+      user-select:none;
+      text-shadow: 0 0 14px rgba(0,255,65,0.18);
+      word-break: break-word;
+    }
+
+    /* Tabs */
+    .tabs{ display:flex; gap:10px; margin-bottom:12px; }
+    .tab-btn{
+      flex:1;
+      padding:12px 10px;
+      border:1px solid var(--dim);
+      background:#000;
+      color:var(--primary);
+      cursor:pointer;
+      font-weight:900;
+      border-radius: 12px;
+      opacity:0.78;
+      transition: all 140ms ease;
+    }
+    .tab-btn.active{
+      opacity:1;
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(255,204,0,0.25);
+      transform: translateY(-1px);
+    }
+
+    /* Logs */
+    .log-row{
+      display:flex;
+      justify-content:space-between;
+      border-bottom:1px solid #222;
+      padding:8px 0;
+      font-size:0.78rem;
+      gap:10px;
+    }
+    .log-left b{ color: var(--gold); }
+    .log-actions{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+    .btn-del{
+      background: var(--red);
+      color:white;
+      border:none;
+      padding:4px 9px;
+      font-size:0.65rem;
+      cursor:pointer;
+      border-radius: 8px;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 420px){
+      .amount{ font-size:1.75rem; }
+      .header{ font-size:0.75rem; }
+      .login-card{ padding:20px 14px; }
+    }
+  </style>
 </head>
 
-<body>
+<body class="vicro-theme app-h">
+  <canvas id="canvas-bg"></canvas>
+  <canvas id="matrix"></canvas>
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
 
-<!-- LOGIN -->
-<div id="login-page">
-<div class="login-card">
-<h2>OMEGA_v32</h2>
+  <!-- LOGIN -->
+  <div id="login-page">
+    <div class="login-shell">
+      <div class="login-card">
+        <h2 class="brand">OMEGA_v30.9</h2>
+        <div class="typebar"><span id="type-text"></span><span class="caret"></span></div>
 
-<input type="text" id="user" class="hacker-input" placeholder="USUARIO">
-<input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
+        <input type="text" id="user" class="hacker-input" placeholder="USUARIO" autocomplete="username">
+        <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA" autocomplete="current-password">
 
-<button id="btn-main" class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
+        <button id="btn-main" class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
 
-<div style="margin-top:15px;font-size:0.7rem;">
-<span onclick="toggleReg()" id="reg-text" style="color:var(--blue);cursor:pointer;">[REGISTRAR]</span>
-</div>
-</div>
-</div>
+        <div class="login-actions">
+          <span onclick="toggleReg()" id="reg-text" class="linkish" style="color:var(--blue);">[REGISTRAR]</span>
+          <span onclick="cambiarPassLogin()" class="linkish" style="color:var(--pink);">[CAMBIAR PASS]</span>
+          <span onclick="configAcceso()" class="linkish" style="color:var(--gold);">[ADMIN]</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- APP -->
-<div id="main-app">
+  <!-- APP -->
+  <div id="main-app">
+    <div class="header">
+      <span id="display-user"></span>
+      <span id="sync-status">● CORE_CONNECTED</span>
+      <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:6px 10px; cursor:pointer; border-radius:10px; font-weight:900;">SALIR</button>
+    </div>
 
-<div class="header">
-<span id="display-user"></span>
-<span id="sync-status">● CORE_CONNECTED</span>
-<button onclick="location.reload()" style="background:red;color:white;border:none;padding:5px;">SALIR</button>
-</div>
+    <!-- Música -->
+    <div id="player-vicro">
+      <select id="track-list" onchange="changeTrack()">
+        <option value="">-- MÚSICA (8 PISTAS) --</option>
+        <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
+        <option value="papasito.mp3">Papasito</option>
+        <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
+        <option value="titimepregunto.mp3">Tití Me Preguntó</option>
+        <option value="m5.mp3">Música 5</option>
+        <option value="m6.mp3">Música 6</option>
+        <option value="m7.mp3">Música 7</option>
+        <option value="m8.mp3">Música 8</option>
+      </select>
+      <audio controls id="main-audio"></audio>
+    </div>
 
-<!-- MÚSICA -->
-<div style="background:#0a0a0a;border:1px solid var(--primary);padding:10px;margin-bottom:15px;">
-<select id="track-list" onchange="changeTrack()" style="width:100%;background:#000;color:var(--primary);border:1px solid var(--dim);">
-<option value="">-- MÚSICA --</option>
-<option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
-<option value="papasito.mp3">Papasito</option>
-<option value="unanochemedellin.mp3">Una Noche en Medellín</option>
-<option value="titimepregunto.mp3">Tití Me Preguntó</option>
-</select>
-<audio controls id="main-audio"></audio>
-</div>
+    <div class="content-grid">
+      <div id="panel-controls" class="panel"></div>
 
-<div id="panel-controls"></div>
+      <div class="panel">
+        <small>[ HISTORIAL ]</small>
+        <div id="panel-logs" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
 
-<div class="node-card">
-<small>[ HISTORIAL ]</small>
-<div id="panel-logs"></div>
-</div>
+  <script>
+    /* ========= CONFIG JSONBIN ========= */
+    const BIN_ID = '698bb9a743b1c97be975254f';
+    const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
+    const MASTER_EDIT = "2026";
 
-</div>
+    let db = { auth: {}, data: {} };
+    let currentUser = "";
+    let regMode = false;
 
-<script>
-const BIN_ID='698bb9a743b1c97be975254f';
-const MASTER_KEY='$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
-const MASTER_EDIT="2026";
+    /* ========= Tabs vicro ========= */
+    let vicroTab = "vicro_airtm";
+    try{
+      const saved = localStorage.getItem("vicroTab");
+      if(saved) vicroTab = saved;
+    }catch(e){}
 
-let db={auth:{},data:{}};
-let currentUser="";
-let regMode=false;
+    function setVicroTab(id){
+      vicroTab = id;
+      try{ localStorage.setItem("vicroTab", id); }catch(e){}
+      renderUI();
+    }
 
-/* ================= SYNC ================= */
-async function sync(push=false){
-try{
-if(push){
-await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
-method:'PUT',
-headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},
-body:JSON.stringify(db)
-});
-}else{
-const res=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
-headers:{'X-Master-Key':MASTER_KEY,'X-Bin-Meta':'false'}
-});
-db=await res.json();
-}
-}catch(e){console.log("SYNC ERROR");}
-}
+    /* ========= SYNC ========= */
+    async function sync(push = false){
+      const st = document.getElementById("sync-status");
+      try{
+        if(st) st.style.color = "yellow";
+        if(push){
+          await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY},
+            body: JSON.stringify(db)
+          });
+        } else {
+          const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+            headers: {'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false'}
+          });
+          const d = await res.json();
+          if(d && d.auth) db = d;
+        }
+      } catch(e){
+        console.log("Sync Error", e);
+      } finally {
+        if(st) st.style.color = "var(--primary)";
+      }
+    }
 
-/* ================= LOGIN ================= */
-async function iniciarEscaneo(){
-await sync();
+    /* ========= LOGIN / REG ========= */
+    async function iniciarEscaneo(){
+      const u = document.getElementById('user').value.toLowerCase().trim();
+      const p = document.getElementById('pass').value;
 
-const u=document.getElementById("user").value.toLowerCase().trim();
-const p=document.getElementById("pass").value.trim();
+      if(!u || !p) return alert("COMPLETA USUARIO Y CONTRASEÑA");
 
-if(!u||!p) return alert("Campos vacíos");
+      await sync();
 
-if(regMode){
-if(db.auth[u]) return alert("Usuario ya existe");
-db.auth[u]={user:u,pass:p,active:true,last:Date.now()};
-await sync(true);
-alert("Registrado");
-location.reload();
-return;
-}
+      if(regMode){
+        if(db.auth[u]) return alert("USUARIO YA EXISTE");
 
-if(db.auth[u] && db.auth[u].pass===p){
-currentUser=u;
-db.auth[u].last=Date.now();
-await sync(true);
+        const access = (u === 'kassy10') ? 'kassy' : 'vicro';
+        db.auth[u] = { user: u, pass: p, active: true, last: 0, access };
+        await sync(true);
+        alert("REGISTRO OK");
+        location.reload();
+        return;
+      }
 
-document.getElementById("login-page").style.display="none";
-document.getElementById("main-app").style.display="block";
-document.getElementById("display-user").innerText="OP: "+u.toUpperCase();
+      if(db.auth[u] && db.auth[u].pass === p){
+        if(!db.auth[u].active && u !== 'vicrocrook') return alert("BLOQUEADO");
 
-renderUI();
-}else{
-alert("Credenciales incorrectas");
-}
-}
+        currentUser = u;
+        db.auth[u].last = Date.now();
 
-function toggleReg(){
-regMode=!regMode;
-document.getElementById("btn-main").innerText=regMode?"REGISTRAR":"ACCEDER";
-document.getElementById("reg-text").innerText=regMode?"[VOLVER]":"[REGISTRAR]";
-}
+        document.body.className = (u === 'kassy10') ? 'kassy-theme app-h' : 'vicro-theme app-h';
 
-/* ================= MOVIMIENTOS ================= */
-async function mov(id,tipo){
-await sync();
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
 
-let c=document.getElementById(`c-${id}`).value.trim();
-let m=parseFloat(document.getElementById(`m-${id}`).value);
+        renderUI();
+        await sync(true);
+      } else {
+        alert("ERROR");
+      }
+    }
 
-if(!c||isNaN(m)||m<=0) return;
+    function toggleReg(){
+      regMode = !regMode;
+      document.getElementById('btn-main').innerText = regMode ? "REGISTRAR" : "ACCEDER";
+      document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]";
+    }
 
-if(!db.data[id]) db.data[id]={saldo:0,logs:[]};
+    /* Cambiar pass desde login (usuario) */
+    async function cambiarPassLogin(){
+      await sync();
+      let u = prompt("USUARIO:"); if(!u) return;
+      u = u.toLowerCase().trim();
+      if(!db.auth[u]) return alert("NO EXISTE");
 
-db.data[id].saldo+=(tipo==='IN'?m:-m);
+      const actual = prompt("CONTRASEÑA ACTUAL:");
+      if(actual !== db.auth[u].pass) return alert("INCORRECTA");
 
-db.data[id].logs.push({
-t:Date.now(),
-desc:c,
-val:m,
-type:tipo,
-op:currentUser,
-node:id
-});
+      const nueva = prompt("NUEVA CONTRASEÑA:");
+      if(!nueva) return;
 
-await sync(true);
-renderUI();
-}
+      db.auth[u].pass = nueva;
+      await sync(true);
+      alert("PASS ACTUALIZADA");
+    }
 
-/* ================= RENDER ================= */
-function renderUI(){
-const container=document.getElementById("panel-controls");
-container.innerHTML="";
+    /* ADMIN */
+    async function configAcceso(){
+      await sync();
+      let u = prompt("USUARIO A MODIFICAR:"); if(!u) return;
+      u = u.toLowerCase().trim();
+      if(!db.auth[u]) return alert("NO EXISTE");
 
-if(currentUser==="vicrocrook"){
-renderCard("vicro_airtm","VICRO_AIRTM","var(--blue)");
-renderCard("vicro_cap","RESERVA_CAPITAL","var(--primary)");
-renderLogs(["vicro_airtm","vicro_cap"]);
-}else if(currentUser==="kassy10"){
-renderCard("kassy_caja","CAJA_KASSY","var(--pink)");
-renderLogs(["kassy_caja"]);
-}else{
-let node=currentUser+"_caja";
-renderCard(node,"CAJA_"+currentUser.toUpperCase(),"var(--pink)");
-renderLogs([node]);
-}
-}
+      if(prompt("MASTER KEY (2026):") !== MASTER_EDIT) return;
 
-function renderCard(id,title,color){
-if(!db.data[id]) db.data[id]={saldo:0,logs:[]};
+      const op = prompt("1) Cambiar Pass\n2) Eliminar Usuario\n3) Activar/Desactivar\n4) Cambiar Acceso (vicro/kassy)");
+      if(op === "1"){
+        const np = prompt("NUEVA PASS:");
+        if(!np) return;
+        db.auth[u].pass = np;
+        await sync(true);
+        alert("OK");
+      } else if(op === "2"){
+        if(confirm("¿Eliminar a " + u + "?")){
+          delete db.auth[u];
+          await sync(true);
+          alert("ELIMINADO");
+        }
+      } else if(op === "3"){
+        db.auth[u].active = !db.auth[u].active;
+        await sync(true);
+        alert(db.auth[u].active ? "ACTIVADO" : "DESACTIVADO");
+      } else if(op === "4"){
+        const ac = prompt("ACCESO (vicro/kassy):", db.auth[u].access || "vicro");
+        if(ac !== "vicro" && ac !== "kassy") return alert("SOLO vicro o kassy");
+        db.auth[u].access = ac;
+        await sync(true);
+        alert("ACCESO OK");
+      }
+    }
 
-const container=document.getElementById("panel-controls");
+    /* ========= UI ========= */
+    function renderUI(){
+      const container = document.getElementById('panel-controls');
+      container.innerHTML = "";
 
-container.innerHTML+=`
-<div class="node-card">
-<small style="color:${color}">[ ${title} ]</small>
-<div class="amount" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
-<input id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
-<input id="m-${id}" type="number" class="hacker-input" placeholder="MONTO">
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
-<button class="btn-hack" onclick="mov('${id}','IN')">DEP</button>
-<button class="btn-hack" style="background:red;color:white;" onclick="mov('${id}','OUT')">GAS</button>
-</div>
-</div>`;
-}
+      const access = (db.auth[currentUser] && db.auth[currentUser].access) ? db.auth[currentUser].access : "vicro";
 
-function renderLogs(nodes){
-const logBox=document.getElementById("panel-logs");
-logBox.innerHTML="";
+      if(access === 'vicro'){
+        container.innerHTML = `
+          <div class="tabs">
+            <button class="tab-btn ${vicroTab==='vicro_airtm'?'active':''}" onclick="setVicroTab('vicro_airtm')">AIRTM</button>
+            <button class="tab-btn ${vicroTab==='vicro_cap'?'active':''}" onclick="setVicroTab('vicro_cap')">CAP</button>
+          </div>
+          <div id="vicro-tab-content"></div>
+        `;
 
-let all=[];
-nodes.forEach(n=>{if(db.data[n]) all=all.concat(db.data[n].logs)});
+        const slot = document.getElementById("vicro-tab-content");
+        if(vicroTab === "vicro_airtm"){
+          slot.innerHTML = "";
+          slot.appendChild(buildCard("vicro_airtm","VICRO_AIRTM","var(--blue)"));
+          renderGlobalLogs(["vicro_airtm"]);
+        } else {
+          slot.innerHTML = "";
+          slot.appendChild(buildCard("vicro_cap","RESERVA_CAPITAL","var(--primary)"));
+          renderGlobalLogs(["vicro_cap"]);
+        }
+      } else {
+        const node = (currentUser === "kassy10") ? "kassy_caja" : (currentUser + "_caja");
+        const title = (currentUser === "kassy10") ? "CAJA_KASSY" : ("CAJA_" + currentUser.toUpperCase());
+        const color = (currentUser === "kassy10") ? "var(--pink)" : "var(--pink)";
 
-all.sort((a,b)=>b.t-a.t).slice(0,20).forEach(l=>{
-logBox.innerHTML+=`
-<div style="display:flex;justify-content:space-between;border-bottom:1px solid #222;padding:5px 0;font-size:0.7rem;">
-<span>${l.desc}<br><small>${l.op}</small></span>
-<span style="color:${l.type==='IN'?'#0f4':'#f44'}">
-${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}
-<button onclick="eliminarMovimiento('${l.node}',${l.t})" style="background:red;color:white;border:none;font-size:0.6rem;">X</button>
-</span>
-</div>`;
-});
-}
+        container.appendChild(buildCard(node, title, color));
+        renderGlobalLogs([node]);
+      }
+    }
 
-/* ================= AJUSTAR ================= */
-async function ajustar(id){
-if(prompt("MASTER KEY:")!==MASTER_EDIT) return;
-let v=prompt("Nuevo saldo:");
-if(!v) return;
-db.data[id].saldo=parseFloat(v);
-await sync(true);
-renderUI();
-}
+    function buildCard(id, title, color){
+      if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
 
-/* ================= ELIMINAR ================= */
-async function eliminarMovimiento(node,timestamp){
-if(prompt("MASTER KEY:")!==MASTER_EDIT) return;
+      const wrap = document.createElement("div");
+      wrap.className = "node-card";
+      wrap.style.borderLeft = `6px solid ${color}`;
+      wrap.innerHTML = `
+        <small style="color:${color}; font-weight:900;">[ ${title} ]</small>
+        <div class="amount" onclick="ajustar('${id}')">$${Number(db.data[id].saldo||0).toLocaleString()}</div>
+        <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
+        <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button class="btn-hack" style="background:${color}" onclick="mov('${id}','IN')">DEP</button>
+          <button class="btn-hack" style="background:var(--red); color:white" onclick="mov('${id}','OUT')">GAS</button>
+        </div>
+      `;
+      return wrap;
+    }
 
-const index=db.data[node].logs.findIndex(l=>l.t===timestamp);
-if(index===-1) return;
+    /* ========= MOV / LOGS ========= */
+    async function mov(id, tipo){
+      const cEl = document.getElementById(`c-${id}`);
+      const mEl = document.getElementById(`m-${id}`);
 
-const mov=db.data[node].logs[index];
-db.data[node].saldo-=(mov.type==='IN'?mov.val:-mov.val);
-db.data[node].logs.splice(index,1);
+      const c = (cEl?.value || "").trim();
+      const m = parseFloat(mEl?.value);
 
-await sync(true);
-renderUI();
-}
+      if(!c || isNaN(m) || m <= 0) return;
 
-/* ================= MUSICA ================= */
-function changeTrack(){
-let audio=document.getElementById("main-audio");
-audio.src=document.getElementById("track-list").value;
-if(audio.src) audio.play();
-}
+      await sync();
 
-/* ================= AUTO SYNC ================= */
-setInterval(async()=>{
-if(currentUser){
-await sync();
-renderUI();
-}
-},5000);
-</script>
+      if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
 
+      db.data[id].saldo = Number(db.data[id].saldo || 0) + (tipo === 'IN' ? m : -m);
+      db.data[id].logs.push({ t: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser, node: id });
+
+      await sync(true);
+      renderUI();
+    }
+
+    function renderGlobalLogs(nodos){
+      const logBox = document.getElementById('panel-logs');
+      logBox.innerHTML = "";
+
+      let all = [];
+      nodos.forEach(n => {
+        if(db.data[n] && Array.isArray(db.data[n].logs)) all = all.concat(db.data[n].logs);
+      });
+
+      all.sort((a,b) => b.t - a.t).slice(0, 30).forEach(l => {
+        const sign = (l.type === 'IN') ? '+' : '-';
+        const col = (l.type === 'IN') ? '#0f4' : '#f44';
+
+        const row = document.createElement("div");
+        row.className = "log-row";
+        row.innerHTML = `
+          <div class="log-left">
+            <b>[${(l.node||'').toUpperCase()}]</b> ${l.desc || ''}<br>
+            <small>${l.op || ''}</small>
+          </div>
+          <div class="log-actions">
+            <div style="color:${col}; font-weight:900;">${sign}$${Number(l.val||0).toLocaleString()}</div>
+            <button class="btn-del" onclick="eliminarMovimiento('${l.node}', ${l.t})">ELIM</button>
+          </div>
+        `;
+        logBox.appendChild(row);
+      });
+    }
+
+    /* ========= PERMISOS ========= */
+    function canEditNode(node){
+      if(currentUser === "vicrocrook") return (node === "vicro_airtm" || node === "vicro_cap");
+      if(currentUser === "kassy10") return (node === "kassy_caja");
+      return node === (currentUser + "_caja");
+    }
+
+    async function ajustar(id){
+      if(!canEditNode(id)) return alert("SIN PERMISOS");
+      if(prompt("MASTER KEY:") !== MASTER_EDIT) return;
+
+      const v = prompt("NUEVO SALDO:");
+      if(v === null || v === "") return;
+
+      await sync();
+      if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
+      db.data[id].saldo = parseFloat(v);
+      await sync(true);
+      renderUI();
+    }
+
+    async function eliminarMovimiento(node, timestamp){
+      if(!canEditNode(node)) return alert("SIN PERMISOS");
+      if(prompt("MASTER KEY:") !== MASTER_EDIT) return;
+
+      await sync();
+      if(!db.data[node] || !Array.isArray(db.data[node].logs)) return;
+
+      const idx = db.data[node].logs.findIndex(x => x.t === timestamp);
+      if(idx < 0) return;
+
+      const mov = db.data[node].logs[idx];
+      db.data[node].saldo = Number(db.data[node].saldo || 0) - (mov.type === 'IN' ? mov.val : -mov.val);
+      db.data[node].logs.splice(idx, 1);
+
+      await sync(true);
+      renderUI();
+    }
+
+    /* ========= Música ========= */
+    function changeTrack(){
+      const a = document.getElementById('main-audio');
+      const v = document.getElementById('track-list').value;
+      a.src = v;
+      if(v) a.play();
+    }
+
+    /* ========= Auto-sync realtime ========= */
+    setInterval(async () => {
+      if(!currentUser) return;
+      await sync();
+      renderUI();
+    }, 3000);
+
+    /* ========= Fondo estrellas (como tu estilo) ========= */
+    const canvas = document.getElementById('canvas-bg');
+    const ctx = canvas.getContext('2d');
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let stars = Array(120).fill(0).map(() => ({
+      x: Math.random()*canvas.width,
+      y: Math.random()*canvas.height,
+      z: Math.random()*canvas.width
+    }));
+
+    function animStars(){
+      ctx.fillStyle = "rgba(0,0,0,0.20)";
+      ctx.fillRect(0,0,canvas.width, canvas.height);
+
+      ctx.fillStyle = (currentUser === 'kassy10') ? "#ff69b4" : "#00ff41";
+      for(const s of stars){
+        s.z -= 4;
+        if(s.z <= 0) s.z = canvas.width;
+        const sx = (s.x - canvas.width/2) * (canvas.width/s.z) + canvas.width/2;
+        const sy = (s.y - canvas.height/2) * (canvas.width/s.z) + canvas.height/2;
+        const r  = (canvas.width/s.z);
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(animStars);
+    }
+    animStars();
+
+    /* ========= Matrix overlay ========= */
+    const mcanvas = document.getElementById('matrix');
+    const mctx = mcanvas.getContext('2d');
+    function mresize(){ mcanvas.width = window.innerWidth; mcanvas.height = window.innerHeight; }
+    window.addEventListener('resize', mresize);
+    mresize();
+
+    const glyphs = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&*@";
+    let cols = [];
+    function initCols(){
+      const fontSize = 14;
+      const count = Math.floor(mcanvas.width / fontSize);
+      cols = Array(count).fill(0).map(()=>Math.random()*mcanvas.height);
+    }
+    initCols();
+
+    function matrixTick(){
+      const fontSize = 14;
+      mctx.fillStyle = "rgba(0,0,0,0.08)";
+      mctx.fillRect(0,0,mcanvas.width,mcanvas.height);
+
+      mctx.font = `${fontSize}px Courier New`;
+      mctx.fillStyle = (currentUser === 'kassy10') ? "#ff69b4" : "#00ff41";
+
+      for(let i=0;i<cols.length;i++){
+        const ch = glyphs[Math.floor(Math.random()*glyphs.length)];
+        const x = i * fontSize;
+        const y = cols[i];
+        mctx.fillText(ch, x, y);
+
+        cols[i] = y + fontSize;
+        if(cols[i] > mcanvas.height + 200 && Math.random() > 0.975){
+          cols[i] = -Math.random()*200;
+        }
+      }
+      requestAnimationFrame(matrixTick);
+    }
+    matrixTick();
+
+    /* ========= Typing login ========= */
+    const phrases = [
+      "INICIALIZANDO CORE…",
+      "ENCRIPTANDO CANALES…",
+      "SINCRONIZANDO NODOS…",
+      "VALIDANDO OPERADOR…",
+      "LISTO // OMEGA ONLINE"
+    ];
+    let pi=0, ci=0, dir=1;
+    const typeEl = document.getElementById("type-text");
+    function typeLoop(){
+      const p = phrases[pi];
+      ci += dir;
+      typeEl.textContent = p.slice(0, Math.max(0, ci));
+      if(ci >= p.length + 10){ dir = -1; }
+      if(ci <= 0){
+        dir = 1;
+        pi = (pi + 1) % phrases.length;
+      }
+      setTimeout(typeLoop, dir === 1 ? 55 : 30);
+    }
+    typeLoop();
+  </script>
 </body>
 </html>
-
