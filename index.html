@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMEGA ELITE v34.8 | VICRO & KASSY</title>
+    <title>OMEGA ELITE v34.9 | VICRO & KASSY</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.98);
@@ -11,6 +11,9 @@
         }
         body.vicro-theme { --primary: #00ff41; --dim: #004400; }
         body.kassy-theme { --primary: var(--pink); --dim: #440022; }
+        /* Tema Dorado para Capital */
+        body.cap-active { --primary: var(--gold); --dim: #443300; }
+
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); transition: 0.5s; }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
         
@@ -30,7 +33,7 @@
         .tab-btn.active { background: var(--primary); color: #000; }
         
         .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 4px; border-left: 5px solid var(--primary); margin-bottom: 15px; }
-        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; }
+        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; transition: 0.3s; }
         .log-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding: 8px 0; font-size: 0.7rem; }
         .del-log { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 0 4px; margin-left: 10px; }
         
@@ -42,13 +45,13 @@
     <canvas id="canvas-bg"></canvas>
 
     <div id="loading-screen">
-        <div id="load-msg">SINCRONIZANDO_MODULOS...</div>
+        <div id="load-msg">SINCRONIZANDO_TIEMPO_REAL...</div>
         <div class="loader-bar"><div class="loader-progress" id="load-bar"></div></div>
     </div>
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="login-title">OMEGA_CORE_v34.8</h2>
+            <h2 id="login-title">OMEGA_CORE_v34.9</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
             <button class="btn-hack" id="btn-main" onclick="validarEntrada()">EJECUTAR ACCESO</button>
@@ -62,6 +65,7 @@
     <div id="main-app">
         <div class="header">
             <span id="display-user"></span>
+            <span id="sync-status" style="color: var(--primary)">● LIVE_SYNC</span>
             <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 10px; cursor:pointer;">LOGOUT</button>
         </div>
         <div id="vicro-tabs" class="tab-container">
@@ -95,6 +99,7 @@
         const BIN_ID = '698bb9a743b1c97be975254f';
         const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
         let db = { auth: {}, data: {} }, currentUser = "", currentTab = "airtm", regMode = false;
+        let autoSyncInterval;
 
         async function sync(push = false) {
             const options = {
@@ -106,9 +111,27 @@
                 } else {
                     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, options);
                     const d = await res.json();
-                    if(d.auth) db = d;
+                    if(d.auth) {
+                        // Solo actualizamos si hay cambios reales para evitar parpadeos
+                        if(JSON.stringify(db.data) !== JSON.stringify(d.data)) {
+                            db = d;
+                            if(currentUser) renderUI();
+                        }
+                    }
                 }
             } catch(e) { console.error("Sync Error"); }
+        }
+
+        // FUNCIÓN CLAVE: Inicia el chequeo automático cada 3 segundos
+        function startLiveSync() {
+            if(autoSyncInterval) clearInterval(autoSyncInterval);
+            autoSyncInterval = setInterval(async () => {
+                if(currentUser) {
+                    await sync();
+                    document.getElementById('sync-status').style.opacity = "0.5";
+                    setTimeout(() => document.getElementById('sync-status').style.opacity = "1", 500);
+                }
+            }, 3000); 
         }
 
         async function switchTab(tab) {
@@ -116,7 +139,10 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + tab).classList.add('active');
             
-            // Forzamos actualización visual inmediata tras sincronizar
+            // Cambia el tema visual si es Capital
+            if(tab === 'cap') document.body.classList.add('cap-active');
+            else document.body.classList.remove('cap-active');
+            
             await sync();
             renderUI();
         }
@@ -124,7 +150,7 @@
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase();
             const p = document.getElementById('pass').value;
-            if(!u || !p) return alert("LLENA LOS CAMPOS");
+            if(!u || !p) return alert("DATOS_REQUERIDOS");
             await sync();
             if(regMode) {
                 if(db.auth[u]) return alert("USUARIO EXISTENTE");
@@ -153,8 +179,9 @@
                     document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
                     if(db.auth[currentUser].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                     renderUI();
+                    startLiveSync(); // Activamos el tiempo real al entrar
                 }
-            }, 50);
+            }, 40);
         }
 
         function renderUI() {
@@ -167,10 +194,10 @@
 
         function renderCard(parent, id, title) {
             if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
-            const color = (id === 'vicro_airtm') ? 'var(--blue)' : (id === 'vicro_cap' ? 'var(--primary)' : 'var(--pink)');
+            const color = (id === 'vicro_airtm') ? 'var(--blue)' : (id === 'vicro_cap' ? 'var(--gold)' : 'var(--pink)');
             parent.innerHTML = `<div class="node-card" style="border-left-color:${color}">
                 <small style="color:${color}">[ ${title} ]</small>
-                <div class="amount" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
+                <div class="amount" id="amt-${id}" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
                 <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
                 <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
@@ -182,20 +209,16 @@
         async function mov(id, tipo) {
             const c = document.getElementById(`c-${id}`).value, m = parseFloat(document.getElementById(`m-${id}`).value);
             if(!c || isNaN(m)) return;
-            
-            // Bloque de sincronización estricta para Vicro
-            await sync(); 
             db.data[id].saldo += (tipo === 'IN' ? m : -m);
             db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
-            await sync(true); 
-            renderUI();
+            renderUI(); await sync(true);
         }
 
         function renderLogs(id) {
             const logBox = document.getElementById('panel-logs'); logBox.innerHTML = "";
             document.getElementById('log-title').innerText = `[ HISTORIAL_${id.toUpperCase()} ]`;
             if(db.data[id] && db.data[id].logs) {
-                [...db.data[id].logs].reverse().forEach(l => {
+                [...db.data[id].logs].reverse().slice(0, 15).forEach(l => {
                     logBox.innerHTML += `<div class="log-item">
                         <span>${l.desc}<br><small>${l.op}</small></span>
                         <span><b style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</b>
@@ -207,20 +230,17 @@
 
         async function borrarLinea(nodeId, logId) {
             if(prompt("CLAVE MAESTRA:") === "2026") {
-                await sync();
                 const item = db.data[nodeId].logs.find(l => l.id === logId);
                 if(item) {
                     db.data[nodeId].saldo += (item.type === 'OUT' ? item.val : -item.val);
                     db.data[nodeId].logs = db.data[nodeId].logs.filter(l => l.id !== logId);
-                    await sync(true);
-                    renderUI();
+                    await sync(true); renderUI();
                 }
             }
         }
 
         async function configAcceso() {
-            await sync(); 
-            let u = prompt("USUARIO:").toLowerCase();
+            await sync(); let u = prompt("USUARIO:").toLowerCase();
             if(!db.auth[u]) return alert("NO EXISTE");
             if(prompt("KEY (2026):") === "2026") {
                 let op = prompt("1. Pass | 2. ELIMINAR");
@@ -252,5 +272,4 @@
     </script>
 </body>
 </html>
-
 
