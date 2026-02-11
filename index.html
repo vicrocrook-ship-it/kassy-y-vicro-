@@ -3,39 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMEGA ELITE v34.9 | VICRO & KASSY</title>
+    <title>VICRO SYSTEM | OMEGA FINAL</title>
     <style>
         :root {
-            --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.98);
+            --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.98);
             --red: #ff3333; --blue: #00ccff; --pink: #ff69b4; --gold: #ffcc00;
         }
         body.vicro-theme { --primary: #00ff41; --dim: #004400; }
         body.kassy-theme { --primary: var(--pink); --dim: #440022; }
-        /* Tema Dorado para Capital */
         body.cap-active { --primary: var(--gold); --dim: #443300; }
 
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); transition: 0.5s; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
-        
-        #loading-screen { position: fixed; inset: 0; z-index: 3000; background: #000; display: none; justify-content: center; align-items: center; flex-direction: column; }
-        .loader-bar { width: 300px; height: 2px; background: #111; position: relative; overflow: hidden; margin-top: 20px; }
-        .loader-progress { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
+        /* Login Resaltado VICRO SYSTEM */
         #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
-        .login-card { text-align: center; width: 90%; max-width: 380px; border: 1px solid var(--primary); padding: 30px; background: #000; box-shadow: 0 0 40px var(--dim); }
-        .hacker-input { width: 100%; background: rgba(0,0,0,0.8); border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; }
-        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .vicro-brand { position: absolute; top: 15%; font-size: 3rem; font-weight: bold; text-shadow: 0 0 20px var(--primary); letter-spacing: 10px; opacity: 0.8; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         
+        .login-card { text-align: center; width: 90%; max-width: 380px; border: 2px solid var(--primary); padding: 40px 30px; background: rgba(0,0,0,0.9); box-shadow: 0 0 50px var(--dim); border-radius: 10px; }
+        .hacker-input { width: 100%; background: transparent; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; font-weight: bold; }
+        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-hack:hover { background: #fff; box-shadow: 0 0 20px var(--primary); }
+
+        /* App Layout */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.7rem; }
         .tab-container { display: none; gap: 10px; margin: 10px 0; }
-        .tab-btn { flex: 1; padding: 10px; background: #111; border: 1px solid var(--dim); color: var(--primary); cursor: pointer; font-weight: bold; }
+        .tab-btn { flex: 1; padding: 12px; background: #111; border: 1px solid var(--dim); color: var(--primary); cursor: pointer; font-weight: bold; }
         .tab-btn.active { background: var(--primary); color: #000; }
         
         .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 4px; border-left: 5px solid var(--primary); margin-bottom: 15px; }
-        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; transition: 0.3s; }
+        .amount { font-size: 2.8rem; font-weight: bold; margin: 10px 0; }
         .log-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding: 8px 0; font-size: 0.7rem; }
-        .del-log { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 0 4px; margin-left: 10px; }
+        .del-log { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 0 5px; font-weight: bold; }
         
         #player-vicro { background: #0a0a0a; border: 1px solid var(--primary); padding: 10px; border-radius: 8px; margin-bottom: 10px;}
         audio { width: 100%; height: 30px; filter: invert(1); margin-top: 8px; }
@@ -44,17 +45,13 @@
 <body id="body-tag">
     <canvas id="canvas-bg"></canvas>
 
-    <div id="loading-screen">
-        <div id="load-msg">SINCRONIZANDO_TIEMPO_REAL...</div>
-        <div class="loader-bar"><div class="loader-progress" id="load-bar"></div></div>
-    </div>
-
     <div id="login-page">
+        <div class="vicro-brand">VICRO SYSTEM</div>
         <div class="login-card">
-            <h2 id="login-title">OMEGA_CORE_v34.9</h2>
+            <h2 id="login-title" style="margin-bottom: 25px;">SECURE_ACCESS</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            <button class="btn-hack" id="btn-main" onclick="validarEntrada()">EJECUTAR ACCESO</button>
+            <button class="btn-hack" id="btn-main" onclick="validarEntrada()">ACCEDER</button>
             <div style="margin-top:20px; font-size: 0.6rem; display: flex; justify-content: space-around;">
                 <span onclick="toggleReg()" id="reg-text" style="color:var(--blue); cursor:pointer;">[REGISTRAR]</span>
                 <span onclick="configAcceso()" style="color:var(--gold); cursor:pointer;">[AJUSTES/PASS]</span>
@@ -65,7 +62,7 @@
     <div id="main-app">
         <div class="header">
             <span id="display-user"></span>
-            <span id="sync-status" style="color: var(--primary)">● LIVE_SYNC</span>
+            <span id="sync-status">● LIVE_SYNC</span>
             <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 10px; cursor:pointer;">LOGOUT</button>
         </div>
         <div id="vicro-tabs" class="tab-container">
@@ -98,90 +95,58 @@
     <script>
         const BIN_ID = '698bb9a743b1c97be975254f';
         const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
-        let db = { auth: {}, data: {} }, currentUser = "", currentTab = "airtm", regMode = false;
-        let autoSyncInterval;
+        let db = { auth: {}, data: {} }, currentUser = "", currentTab = "airtm", regMode = false, isWriting = false;
 
         async function sync(push = false) {
-            const options = {
-                headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json', 'X-Bin-Meta': 'false' }
-            };
+            if (isWriting && !push) return;
+            const headers = { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json', 'X-Bin-Meta': 'false' };
             try {
-                if(push) {
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', ...options, body: JSON.stringify(db) });
+                if (push) {
+                    isWriting = true;
+                    document.getElementById('sync-status').innerText = "● GUARDANDO...";
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers, body: JSON.stringify(db) });
+                    setTimeout(() => { 
+                        isWriting = false; 
+                        document.getElementById('sync-status').innerText = "● LIVE_SYNC";
+                    }, 3000);
                 } else {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, options);
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
                     const d = await res.json();
-                    if(d.auth) {
-                        // Solo actualizamos si hay cambios reales para evitar parpadeos
-                        if(JSON.stringify(db.data) !== JSON.stringify(d.data)) {
-                            db = d;
-                            if(currentUser) renderUI();
-                        }
+                    if (d.auth && JSON.stringify(db.data) !== JSON.stringify(d.data)) {
+                        db = d;
+                        if (currentUser) renderUI();
                     }
                 }
-            } catch(e) { console.error("Sync Error"); }
+            } catch (e) { isWriting = false; }
         }
 
-        // FUNCIÓN CLAVE: Inicia el chequeo automático cada 3 segundos
-        function startLiveSync() {
-            if(autoSyncInterval) clearInterval(autoSyncInterval);
-            autoSyncInterval = setInterval(async () => {
-                if(currentUser) {
-                    await sync();
-                    document.getElementById('sync-status').style.opacity = "0.5";
-                    setTimeout(() => document.getElementById('sync-status').style.opacity = "1", 500);
-                }
-            }, 3000); 
+        setInterval(() => { if (currentUser && !isWriting) sync(); }, 4000);
+
+        async function validarEntrada() {
+            const u = document.getElementById('user').value.toLowerCase(), p = document.getElementById('pass').value;
+            await sync();
+            if (regMode) {
+                if (db.auth[u]) return alert("USUARIO EXISTENTE");
+                db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
+                await sync(true); alert("REGISTRO ENVIADO"); location.reload();
+            } else if (db.auth[u] && db.auth[u].pass === p) {
+                if (!db.auth[u].active && u !== 'vicrocrook') return alert("CUENTA BLOQUEADA");
+                currentUser = u;
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                document.body.className = (u === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
+                document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
+                if (db.auth[u].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
+                renderUI();
+            } else { alert("ERROR"); }
         }
 
         async function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + tab).classList.add('active');
-            
-            // Cambia el tema visual si es Capital
-            if(tab === 'cap') document.body.classList.add('cap-active');
-            else document.body.classList.remove('cap-active');
-            
-            await sync();
-            renderUI();
-        }
-
-        async function validarEntrada() {
-            const u = document.getElementById('user').value.toLowerCase();
-            const p = document.getElementById('pass').value;
-            if(!u || !p) return alert("DATOS_REQUERIDOS");
-            await sync();
-            if(regMode) {
-                if(db.auth[u]) return alert("USUARIO EXISTENTE");
-                db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
-                await sync(true); alert("REGISTRO ENVIADO"); location.reload();
-            } else {
-                if(db.auth[u] && db.auth[u].pass === p) {
-                    if(!db.auth[u].active && u !== 'vicrocrook') return alert("BLOQUEADO");
-                    currentUser = u; lanzarAnimacion();
-                } else { alert("ERROR"); }
-            }
-        }
-
-        function lanzarAnimacion() {
-            document.getElementById('loading-screen').style.display = 'flex';
-            let p = 0;
-            const bar = document.getElementById('load-bar');
-            const int = setInterval(() => {
-                p += 5; bar.style.width = p + "%";
-                if(p >= 100) {
-                    clearInterval(int);
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('login-page').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'flex';
-                    document.body.className = (currentUser === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
-                    document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
-                    if(db.auth[currentUser].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
-                    renderUI();
-                    startLiveSync(); // Activamos el tiempo real al entrar
-                }
-            }, 40);
+            if (tab === 'cap') document.body.classList.add('cap-active'); else document.body.classList.remove('cap-active');
+            await sync(); renderUI();
         }
 
         function renderUI() {
@@ -193,11 +158,11 @@
         }
 
         function renderCard(parent, id, title) {
-            if(!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
+            if (!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
             const color = (id === 'vicro_airtm') ? 'var(--blue)' : (id === 'vicro_cap' ? 'var(--gold)' : 'var(--pink)');
             parent.innerHTML = `<div class="node-card" style="border-left-color:${color}">
                 <small style="color:${color}">[ ${title} ]</small>
-                <div class="amount" id="amt-${id}" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
+                <div class="amount" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
                 <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
                 <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
@@ -208,7 +173,8 @@
 
         async function mov(id, tipo) {
             const c = document.getElementById(`c-${id}`).value, m = parseFloat(document.getElementById(`m-${id}`).value);
-            if(!c || isNaN(m)) return;
+            if (!c || isNaN(m)) return;
+            isWriting = true;
             db.data[id].saldo += (tipo === 'IN' ? m : -m);
             db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
             renderUI(); await sync(true);
@@ -217,8 +183,8 @@
         function renderLogs(id) {
             const logBox = document.getElementById('panel-logs'); logBox.innerHTML = "";
             document.getElementById('log-title').innerText = `[ HISTORIAL_${id.toUpperCase()} ]`;
-            if(db.data[id] && db.data[id].logs) {
-                [...db.data[id].logs].reverse().slice(0, 15).forEach(l => {
+            if (db.data[id] && db.data[id].logs) {
+                [...db.data[id].logs].reverse().forEach(l => {
                     logBox.innerHTML += `<div class="log-item">
                         <span>${l.desc}<br><small>${l.op}</small></span>
                         <span><b style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</b>
@@ -229,34 +195,28 @@
         }
 
         async function borrarLinea(nodeId, logId) {
-            if(prompt("CLAVE MAESTRA:") === "2026") {
+            if (prompt("CLAVE MAESTRA:") === "2026") {
+                isWriting = true;
                 const item = db.data[nodeId].logs.find(l => l.id === logId);
-                if(item) {
+                if (item) {
                     db.data[nodeId].saldo += (item.type === 'OUT' ? item.val : -item.val);
                     db.data[nodeId].logs = db.data[nodeId].logs.filter(l => l.id !== logId);
-                    await sync(true); renderUI();
+                    renderUI(); await sync(true);
                 }
             }
         }
 
         async function configAcceso() {
             await sync(); let u = prompt("USUARIO:").toLowerCase();
-            if(!db.auth[u]) return alert("NO EXISTE");
-            if(prompt("KEY (2026):") === "2026") {
-                let op = prompt("1. Pass | 2. ELIMINAR");
-                if(op === "1") { db.auth[u].pass = prompt("NUEVA:"); await sync(true); alert("OK"); }
-                else if(op === "2") { delete db.auth[u]; await sync(true); alert("BORRADO"); }
-            }
+            if (!db.auth[u] || prompt("KEY:") !== "2026") return alert("ERROR");
+            let op = prompt("1. Pass | 2. ELIMINAR");
+            if (op === "1") { db.auth[u].pass = prompt("NUEVA:"); await sync(true); }
+            else if (op === "2") { delete db.auth[u]; await sync(true); alert("BORRADO"); }
         }
 
-        function toggleReg() {
-            regMode = !regMode;
-            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "EJECUTAR";
-            document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]";
-        }
-
-        async function ajustar(id) { if(prompt("KEY:") === "2026") { let v = prompt("NUEVO SALDO:"); if(v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
-        function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if(a.src) a.play(); }
+        function toggleReg() { regMode = !regMode; document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "ACCEDER"; }
+        async function ajustar(id) { if (prompt("KEY:") === "2026") { let v = prompt("NUEVO SALDO:"); if (v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
+        function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if (a.src) a.play(); }
 
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -265,7 +225,7 @@
         function anim() {
             ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(0,0,canvas.width, canvas.height);
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary');
-            stars.forEach(s => { s.z -= 4; if(s.z<=0) s.z=canvas.width; let sx = (s.x-canvas.width/2)*(canvas.width/s.z)+canvas.width/2; let sy = (s.y-canvas.height/2)*(canvas.width/s.z)+canvas.height/2; ctx.beginPath(); ctx.arc(sx, sy, (canvas.width/s.z), 0, Math.PI*2); ctx.fill(); });
+            stars.forEach(s => { s.z -= 4; if (s.z <= 0) s.z = canvas.width; let sx = (s.x - canvas.width / 2) * (canvas.width / s.z) + canvas.width / 2; let sy = (s.y - canvas.height / 2) * (canvas.width / s.z) + canvas.height / 2; ctx.beginPath(); ctx.arc(sx, sy, (canvas.width / s.z), 0, Math.PI * 2); ctx.fill(); });
             requestAnimationFrame(anim);
         }
         anim();
