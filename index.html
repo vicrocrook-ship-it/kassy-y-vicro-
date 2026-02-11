@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMEGA ELITE v34.6 | VICRO & KASSY</title>
+    <title>OMEGA ELITE v34.7 | VICRO & KASSY</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.98);
@@ -16,7 +16,7 @@
         
         #loading-screen { position: fixed; inset: 0; z-index: 3000; background: #000; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .loader-bar { width: 300px; height: 2px; background: #111; position: relative; overflow: hidden; margin-top: 20px; }
-        .loader-progress { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 15px var(--primary); transition: 0.1s; }
+        .loader-progress { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
 
         #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
         .login-card { text-align: center; width: 90%; max-width: 380px; border: 1px solid var(--primary); padding: 30px; background: #000; box-shadow: 0 0 40px var(--dim); }
@@ -42,13 +42,13 @@
     <canvas id="canvas-bg"></canvas>
 
     <div id="loading-screen">
-        <div id="load-msg">DESCIFRANDO_CREDENCIALES...</div>
+        <div id="load-msg">CONECTANDO_CON_EL_NUCLEO...</div>
         <div class="loader-bar"><div class="loader-progress" id="load-bar"></div></div>
     </div>
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="login-title">OMEGA_CORE_v34.6</h2>
+            <h2 id="login-title">OMEGA_CORE_v34.7</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
             <button class="btn-hack" id="btn-main" onclick="validarEntrada()">EJECUTAR ACCESO</button>
@@ -65,8 +65,8 @@
             <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 10px; cursor:pointer;">LOGOUT</button>
         </div>
         <div id="vicro-tabs" class="tab-container">
-            <button class="tab-btn active" id="tab-airtm" onclick="switchTab('airtm')">AIRTM</button>
-            <button class="tab-btn" id="tab-cap" onclick="switchTab('cap')">CAPITAL</button>
+            <button class="tab-btn active" id="btn-airtm" onclick="switchTab('airtm')">AIRTM</button>
+            <button class="tab-btn" id="btn-cap" onclick="switchTab('cap')">CAPITAL</button>
         </div>
         <div id="player-vicro">
             <select id="track-list" onchange="changeTrack()" style="width:100%; background:#000; color:var(--primary); border:1px solid var(--dim); padding: 5px;">
@@ -97,63 +97,66 @@
         let db = { auth: {}, data: {} }, currentUser = "", currentTab = "airtm", regMode = false;
 
         async function sync(push = false) {
+            const options = {
+                headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json', 'X-Bin-Meta': 'false' }
+            };
             try {
                 if(push) {
-                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY}, body: JSON.stringify(db) });
+                    await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', ...options, body: JSON.stringify(db) });
                 } else {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: {'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false'} });
-                    const d = await res.json(); if(d.auth) db = d;
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, options);
+                    const d = await res.json();
+                    if(d.auth) db = d;
                 }
-            } catch(e) { console.log("Sync Error"); }
+            } catch(e) { console.error("Sync Error:", e); }
+        }
+
+        async function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + tab).classList.add('active');
+            await sync(); // Sincronización forzada al cambiar pestaña
+            renderUI();
         }
 
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase();
             const p = document.getElementById('pass').value;
             if(!u || !p) return alert("CAMPOS VACÍOS");
+            
             await sync();
             if(regMode) {
                 if(db.auth[u]) return alert("USUARIO EXISTENTE");
                 db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
-                await sync(true); alert("SOLICITUD ENVIADA"); location.reload();
+                await sync(true);
+                alert("REGISTRO EXITOSO. ESPERE APROBACIÓN.");
+                location.reload();
             } else {
                 if(db.auth[u] && db.auth[u].pass === p) {
-                    if(!db.auth[u].active && u !== 'vicrocrook') return alert("ACCESO DENEGADO");
-                    currentUser = u; lanzarAnimacionEntrada();
-                } else { alert("ERROR DE CREDENCIALES"); }
+                    if(!db.auth[u].active && u !== 'vicrocrook') return alert("CUENTA NO ACTIVA");
+                    currentUser = u;
+                    lanzarAnimacion();
+                } else { alert("CREDENCIALES ERRÓNEAS"); }
             }
         }
 
-        function lanzarAnimacionEntrada() {
-            const screen = document.getElementById('loading-screen');
+        function lanzarAnimacion() {
+            document.getElementById('loading-screen').style.display = 'flex';
+            let p = 0;
             const bar = document.getElementById('load-bar');
-            const msg = document.getElementById('load-msg');
-            screen.style.display = 'flex';
-            let progress = 0;
-            const msgs = ["DESBLOQUEANDO_NODOS...", "SINCRONIZANDO_VICRO_CORE...", "ACCESO_CONCEDIDO"];
-            const interval = setInterval(() => {
-                progress += 5; bar.style.width = progress + "%";
-                if(progress === 30) msg.innerText = msgs[0];
-                if(progress === 60) msg.innerText = msgs[1];
-                if(progress === 90) msg.innerText = msgs[2];
-                if(progress >= 100) {
-                    clearInterval(interval);
+            const int = setInterval(() => {
+                p += 5; bar.style.width = p + "%";
+                if(p >= 100) {
+                    clearInterval(int);
+                    document.getElementById('loading-screen').style.display = 'none';
                     document.getElementById('login-page').style.display = 'none';
-                    screen.style.display = 'none';
                     document.getElementById('main-app').style.display = 'flex';
                     document.body.className = (currentUser === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
-                    document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
+                    document.getElementById('display-user').innerText = "OPERADOR: " + currentUser.toUpperCase();
                     if(db.auth[currentUser].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                     renderUI();
                 }
             }, 50);
-        }
-
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            renderUI();
         }
 
         function renderUI() {
@@ -181,9 +184,11 @@
         async function mov(id, tipo) {
             const c = document.getElementById(`c-${id}`).value, m = parseFloat(document.getElementById(`m-${id}`).value);
             if(!c || isNaN(m)) return;
+            await sync(); // Sincroniza antes de operar para evitar pisar datos
             db.data[id].saldo += (tipo === 'IN' ? m : -m);
             db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
-            renderUI(); await sync(true);
+            await sync(true); // Guarda inmediatamente
+            renderUI();
         }
 
         function renderLogs(id) {
@@ -202,18 +207,20 @@
 
         async function borrarLinea(nodeId, logId) {
             if(prompt("CLAVE MAESTRA:") === "2026") {
+                await sync();
                 const item = db.data[nodeId].logs.find(l => l.id === logId);
                 if(item) {
                     db.data[nodeId].saldo += (item.type === 'OUT' ? item.val : -item.val);
                     db.data[nodeId].logs = db.data[nodeId].logs.filter(l => l.id !== logId);
-                    renderUI(); await sync(true);
+                    await sync(true);
+                    renderUI();
                 }
             }
         }
 
         async function configAcceso() {
             await sync(); 
-            let u = prompt("USUARIO A MODIFICAR:").toLowerCase();
+            let u = prompt("USUARIO:").toLowerCase();
             if(!db.auth[u]) return alert("NO EXISTE");
             if(prompt("KEY (2026):") === "2026") {
                 let op = prompt("1. Pass | 2. ELIMINAR");
@@ -224,11 +231,11 @@
 
         function toggleReg() {
             regMode = !regMode;
-            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR ACCESO" : "EJECUTAR ACCESO";
+            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "EJECUTAR ACCESO";
             document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]";
         }
 
-        async function ajustar(id) { if(prompt("KEY:") === "2026") { let v = prompt("NUEVO:"); if(v) { db.data[id].saldo = parseFloat(v); renderUI(); await sync(true); } } }
+        async function ajustar(id) { if(prompt("KEY (2026):") === "2026") { let v = prompt("NUEVO:"); if(v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
         function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if(a.src) a.play(); }
 
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
@@ -245,6 +252,5 @@
     </script>
 </body>
 </html>
-
 
 
