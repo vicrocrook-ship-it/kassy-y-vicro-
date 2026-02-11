@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMEGA ELITE v34.7 | VICRO & KASSY</title>
+    <title>OMEGA ELITE v34.8 | VICRO & KASSY</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.98);
@@ -42,13 +42,13 @@
     <canvas id="canvas-bg"></canvas>
 
     <div id="loading-screen">
-        <div id="load-msg">CONECTANDO_CON_EL_NUCLEO...</div>
+        <div id="load-msg">SINCRONIZANDO_MODULOS...</div>
         <div class="loader-bar"><div class="loader-progress" id="load-bar"></div></div>
     </div>
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="login-title">OMEGA_CORE_v34.7</h2>
+            <h2 id="login-title">OMEGA_CORE_v34.8</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
             <button class="btn-hack" id="btn-main" onclick="validarEntrada()">EJECUTAR ACCESO</button>
@@ -108,35 +108,33 @@
                     const d = await res.json();
                     if(d.auth) db = d;
                 }
-            } catch(e) { console.error("Sync Error:", e); }
+            } catch(e) { console.error("Sync Error"); }
         }
 
         async function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + tab).classList.add('active');
-            await sync(); // Sincronización forzada al cambiar pestaña
+            
+            // Forzamos actualización visual inmediata tras sincronizar
+            await sync();
             renderUI();
         }
 
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase();
             const p = document.getElementById('pass').value;
-            if(!u || !p) return alert("CAMPOS VACÍOS");
-            
+            if(!u || !p) return alert("LLENA LOS CAMPOS");
             await sync();
             if(regMode) {
                 if(db.auth[u]) return alert("USUARIO EXISTENTE");
                 db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
-                await sync(true);
-                alert("REGISTRO EXITOSO. ESPERE APROBACIÓN.");
-                location.reload();
+                await sync(true); alert("REGISTRO ENVIADO"); location.reload();
             } else {
                 if(db.auth[u] && db.auth[u].pass === p) {
-                    if(!db.auth[u].active && u !== 'vicrocrook') return alert("CUENTA NO ACTIVA");
-                    currentUser = u;
-                    lanzarAnimacion();
-                } else { alert("CREDENCIALES ERRÓNEAS"); }
+                    if(!db.auth[u].active && u !== 'vicrocrook') return alert("BLOQUEADO");
+                    currentUser = u; lanzarAnimacion();
+                } else { alert("ERROR"); }
             }
         }
 
@@ -152,7 +150,7 @@
                     document.getElementById('login-page').style.display = 'none';
                     document.getElementById('main-app').style.display = 'flex';
                     document.body.className = (currentUser === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
-                    document.getElementById('display-user').innerText = "OPERADOR: " + currentUser.toUpperCase();
+                    document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
                     if(db.auth[currentUser].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                     renderUI();
                 }
@@ -184,10 +182,12 @@
         async function mov(id, tipo) {
             const c = document.getElementById(`c-${id}`).value, m = parseFloat(document.getElementById(`m-${id}`).value);
             if(!c || isNaN(m)) return;
-            await sync(); // Sincroniza antes de operar para evitar pisar datos
+            
+            // Bloque de sincronización estricta para Vicro
+            await sync(); 
             db.data[id].saldo += (tipo === 'IN' ? m : -m);
             db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
-            await sync(true); // Guarda inmediatamente
+            await sync(true); 
             renderUI();
         }
 
@@ -231,11 +231,11 @@
 
         function toggleReg() {
             regMode = !regMode;
-            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "EJECUTAR ACCESO";
+            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "EJECUTAR";
             document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]";
         }
 
-        async function ajustar(id) { if(prompt("KEY (2026):") === "2026") { let v = prompt("NUEVO:"); if(v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
+        async function ajustar(id) { if(prompt("KEY:") === "2026") { let v = prompt("NUEVO SALDO:"); if(v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
         function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if(a.src) a.play(); }
 
         const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
