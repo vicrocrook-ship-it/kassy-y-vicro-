@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMEGA ELITE v34.5 | VICRO & KASSY</title>
+    <title>OMEGA ELITE v34.6 | VICRO & KASSY</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(15, 15, 15, 0.98);
@@ -14,7 +14,6 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); transition: 0.5s; }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
         
-        /* Pantalla de Carga Animada */
         #loading-screen { position: fixed; inset: 0; z-index: 3000; background: #000; display: none; justify-content: center; align-items: center; flex-direction: column; }
         .loader-bar { width: 300px; height: 2px; background: #111; position: relative; overflow: hidden; margin-top: 20px; }
         .loader-progress { width: 0%; height: 100%; background: var(--primary); box-shadow: 0 0 15px var(--primary); transition: 0.1s; }
@@ -49,7 +48,7 @@
 
     <div id="login-page">
         <div class="login-card">
-            <h2 id="login-title">OMEGA_CORE_v34.5</h2>
+            <h2 id="login-title">OMEGA_CORE_v34.6</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
             <button class="btn-hack" id="btn-main" onclick="validarEntrada()">EJECUTAR ACCESO</button>
@@ -66,8 +65,8 @@
             <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 10px; cursor:pointer;">LOGOUT</button>
         </div>
         <div id="vicro-tabs" class="tab-container">
-            <button class="tab-btn active" onclick="switchTab('airtm', event)">AIRTM</button>
-            <button class="tab-btn" onclick="switchTab('cap', event)">CAPITAL</button>
+            <button class="tab-btn active" id="tab-airtm" onclick="switchTab('airtm')">AIRTM</button>
+            <button class="tab-btn" id="tab-cap" onclick="switchTab('cap')">CAPITAL</button>
         </div>
         <div id="player-vicro">
             <select id="track-list" onchange="changeTrack()" style="width:100%; background:#000; color:var(--primary); border:1px solid var(--dim); padding: 5px;">
@@ -108,30 +107,19 @@
             } catch(e) { console.log("Sync Error"); }
         }
 
-        function toggleReg() {
-            regMode = !regMode;
-            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR ACCESO" : "EJECUTAR ACCESO";
-            document.getElementById('login-title').innerText = regMode ? "NUEVO_REGISTRO" : "OMEGA_CORE_v34.5";
-            document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]";
-        }
-
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase();
             const p = document.getElementById('pass').value;
             if(!u || !p) return alert("CAMPOS VACÍOS");
-            
             await sync();
             if(regMode) {
                 if(db.auth[u]) return alert("USUARIO EXISTENTE");
                 db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
-                await sync(true);
-                alert("SOLICITUD ENVIADA AL NÚCLEO");
-                location.reload();
+                await sync(true); alert("SOLICITUD ENVIADA"); location.reload();
             } else {
                 if(db.auth[u] && db.auth[u].pass === p) {
                     if(!db.auth[u].active && u !== 'vicrocrook') return alert("ACCESO DENEGADO");
-                    currentUser = u;
-                    lanzarAnimacionEntrada();
+                    currentUser = u; lanzarAnimacionEntrada();
                 } else { alert("ERROR DE CREDENCIALES"); }
             }
         }
@@ -141,17 +129,13 @@
             const bar = document.getElementById('load-bar');
             const msg = document.getElementById('load-msg');
             screen.style.display = 'flex';
-            
             let progress = 0;
-            const msgs = ["DESBLOQUEANDO_NODOS...", "SINCRONIZANDO_NUBE...", "ACCESO_CONCEDIDO"];
-            
+            const msgs = ["DESBLOQUEANDO_NODOS...", "SINCRONIZANDO_VICRO_CORE...", "ACCESO_CONCEDIDO"];
             const interval = setInterval(() => {
-                progress += 5;
-                bar.style.width = progress + "%";
+                progress += 5; bar.style.width = progress + "%";
                 if(progress === 30) msg.innerText = msgs[0];
                 if(progress === 60) msg.innerText = msgs[1];
                 if(progress === 90) msg.innerText = msgs[2];
-                
                 if(progress >= 100) {
                     clearInterval(interval);
                     document.getElementById('login-page').style.display = 'none';
@@ -159,21 +143,17 @@
                     document.getElementById('main-app').style.display = 'flex';
                     document.body.className = (currentUser === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
                     document.getElementById('display-user').innerText = "OP: " + currentUser.toUpperCase();
-                    if(currentUser === 'vicrocrook') document.getElementById('vicro-tabs').style.display = 'flex';
+                    if(db.auth[currentUser].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                     renderUI();
                 }
-            }, 100);
+            }, 50);
         }
 
-        async function configAcceso() {
-            await sync(); 
-            let u = prompt("USUARIO A MODIFICAR:").toLowerCase();
-            if(!db.auth[u]) return alert("NO EXISTE");
-            if(prompt("KEY (2026):") === "2026") {
-                let op = prompt("1. Pass | 2. ELIMINAR");
-                if(op === "1") { db.auth[u].pass = prompt("NUEVA:"); await sync(true); alert("OK"); }
-                else if(op === "2") { delete db.auth[u]; await sync(true); alert("BORRADO"); }
-            }
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            renderUI();
         }
 
         function renderUI() {
@@ -231,9 +211,21 @@
             }
         }
 
-        function switchTab(tab, e) {
-            currentTab = tab; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active'); renderUI();
+        async function configAcceso() {
+            await sync(); 
+            let u = prompt("USUARIO A MODIFICAR:").toLowerCase();
+            if(!db.auth[u]) return alert("NO EXISTE");
+            if(prompt("KEY (2026):") === "2026") {
+                let op = prompt("1. Pass | 2. ELIMINAR");
+                if(op === "1") { db.auth[u].pass = prompt("NUEVA:"); await sync(true); alert("OK"); }
+                else if(op === "2") { delete db.auth[u]; await sync(true); alert("BORRADO"); }
+            }
+        }
+
+        function toggleReg() {
+            regMode = !regMode;
+            document.getElementById('btn-main').innerText = regMode ? "SOLICITAR ACCESO" : "EJECUTAR ACCESO";
+            document.getElementById('reg-text').innerText = regMode ? "[VOLVER]" : "[REGISTRAR]";
         }
 
         async function ajustar(id) { if(prompt("KEY:") === "2026") { let v = prompt("NUEVO:"); if(v) { db.data[id].saldo = parseFloat(v); renderUI(); await sync(true); } } }
@@ -245,7 +237,7 @@
         let stars = Array(100).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, z: Math.random()*canvas.width}));
         function anim() {
             ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fillRect(0,0,canvas.width, canvas.height);
-            ctx.fillStyle = (currentUser === 'kassy10') ? "#ff69b4" : "#00ff41";
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary');
             stars.forEach(s => { s.z -= 4; if(s.z<=0) s.z=canvas.width; let sx = (s.x-canvas.width/2)*(canvas.width/s.z)+canvas.width/2; let sy = (s.y-canvas.height/2)*(canvas.width/s.z)+canvas.height/2; ctx.beginPath(); ctx.arc(sx, sy, (canvas.width/s.z), 0, Math.PI*2); ctx.fill(); });
             requestAnimationFrame(anim);
         }
@@ -253,5 +245,6 @@
     </script>
 </body>
 </html>
+
 
 
