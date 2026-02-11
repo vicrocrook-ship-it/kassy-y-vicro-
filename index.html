@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>OMEGA CLOUD FIXED</title>
+<title>OMEGA CLOUD HACKER</title>
 
 <style>
 :root{
@@ -13,7 +14,6 @@
 --pink:#ff69b4;
 --red:#ff3333;
 --gold:#ffcc00;
---vh:1vh;
 }
 
 body{
@@ -24,9 +24,33 @@ color:var(--primary);
 overflow:auto;
 }
 
-body.vicro-theme{--primary:#00ff41;--dim:#004400;}
-body.kassy-theme{--primary:var(--pink);--dim:#440022;}
+body.kassy-theme{
+--primary:var(--pink);
+--dim:#440022;
+}
 
+/* FONDO HACKER */
+#stars,#matrix{
+position:fixed;
+inset:0;
+z-index:-2;
+}
+
+.scanlines{
+position:fixed;
+inset:0;
+pointer-events:none;
+background:repeating-linear-gradient(
+to bottom,
+rgba(255,255,255,0.03) 0px,
+rgba(255,255,255,0.03) 1px,
+transparent 2px,
+transparent 6px
+);
+z-index:-1;
+}
+
+/* LOGIN */
 #login-page{
 position:fixed;
 inset:0;
@@ -44,6 +68,12 @@ border:1px solid var(--primary);
 box-shadow:0 0 25px var(--primary);
 text-align:center;
 border-radius:12px;
+animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+from{box-shadow:0 0 10px var(--primary);}
+to{box-shadow:0 0 30px var(--primary);}
 }
 
 .hacker-input{
@@ -55,6 +85,7 @@ color:var(--primary);
 margin-bottom:10px;
 border-radius:8px;
 text-align:center;
+font-size:16px;
 }
 
 .btn-hack{
@@ -66,13 +97,13 @@ padding:14px;
 font-weight:bold;
 border-radius:8px;
 cursor:pointer;
+margin-bottom:6px;
 }
 
 #main-app{
 display:none;
-min-height:calc(var(--vh)*100);
 padding:12px;
-padding-bottom:140px;
+padding-bottom:120px;
 overflow-y:auto;
 }
 
@@ -89,13 +120,13 @@ border:1px solid var(--dim);
 padding:15px;
 margin-bottom:12px;
 border-radius:12px;
+background:rgba(0,0,0,0.6);
 }
 
 .amount{
 font-size:2rem;
 margin:10px 0;
 font-weight:bold;
-cursor:pointer;
 }
 
 .tabs{
@@ -117,7 +148,6 @@ font-weight:bold;
 
 .tab-btn.active{
 border-color:var(--gold);
-box-shadow:0 0 10px var(--gold);
 }
 
 .log-row{
@@ -140,7 +170,11 @@ cursor:pointer;
 </style>
 </head>
 
-<body class="vicro-theme">
+<body>
+
+<canvas id="stars"></canvas>
+<canvas id="matrix"></canvas>
+<div class="scanlines"></div>
 
 <div id="login-page">
 <div class="login-card">
@@ -149,20 +183,14 @@ cursor:pointer;
 <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
 <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
 
-<button class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
-
-<div style="margin-top:12px;font-size:0.7rem;">
-<span onclick="toggleReg()" id="reg-text" style="color:var(--blue);cursor:pointer;">[REGISTRAR]</span> |
-<span onclick="cambiarPassLogin()" style="color:var(--pink);cursor:pointer;">[CAMBIAR PASS]</span>
-</div>
+<button class="btn-hack" onclick="login()">ACCEDER</button>
 </div>
 </div>
 
 <div id="main-app">
 <div class="header">
 <span id="display-user"></span>
-<span id="sync-status">● ONLINE</span>
-<button onclick="location.reload()" style="background:var(--red);color:white;border:none;padding:6px;border-radius:8px;">SALIR</button>
+<button onclick="logout()" style="background:var(--red);color:white;border:none;padding:6px;border-radius:8px;">SALIR</button>
 </div>
 
 <div id="panel-controls"></div>
@@ -176,27 +204,11 @@ cursor:pointer;
 <script>
 const BIN_ID='698bb9a743b1c97be975254f';
 const MASTER_KEY='$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
-const MASTER_EDIT="2026";
 
 let db={auth:{},data:{}};
 let currentUser="";
-let regMode=false;
+let currentNode="";
 let vicroTab="vicro_airtm";
-
-/* FIX vh móvil */
-function setVH(){
-const vh=window.innerHeight*0.01;
-document.documentElement.style.setProperty('--vh',`${vh}px`);
-}
-setVH();
-window.addEventListener('resize',setVH);
-
-/* Evitar cierre teclado */
-document.addEventListener('focusin',e=>{
-if(e.target.tagName==="INPUT"){
-setTimeout(()=>{e.target.scrollIntoView({block:'center'});},200);
-}
-});
 
 /* SYNC */
 async function sync(push=false){
@@ -210,151 +222,165 @@ body:JSON.stringify(db)
 const res=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
 headers:{'X-Master-Key':MASTER_KEY,'X-Bin-Meta':'false'}
 });
-const d=await res.json();
-if(d&&d.auth)db=d;
+db=await res.json();
 }
 }
 
 /* LOGIN */
-async function iniciarEscaneo(){
+async function login(){
 await sync();
-const u=user.value.toLowerCase().trim();
-const p=pass.value.trim();
-if(!u||!p)return alert("Campos vacíos");
+let u=user.value.toLowerCase().trim();
+let p=pass.value.trim();
+if(!db.auth[u]||db.auth[u].pass!==p)return alert("Error");
 
-if(regMode){
-if(db.auth[u])return alert("Existe");
-db.auth[u]={user:u,pass:p,active:true,access:(u==="kassy10"?"kassy":"vicro")};
-await sync(true);
-alert("Registrado");
-location.reload();
-return;
-}
-
-if(db.auth[u]&&db.auth[u].pass===p){
 currentUser=u;
-document.body.className=(u==="kassy10")?"kassy-theme":"vicro-theme";
+document.body.className=(u==="kassy10")?"kassy-theme":"";
 login-page.style.display="none";
 main-app.style.display="block";
 display-user.innerText="OP: "+u.toUpperCase();
 renderUI();
-}else alert("Error");
 }
 
-function toggleReg(){
-regMode=!regMode;
-btn-main.innerText=regMode?"REGISTRAR":"ACCEDER";
-reg-text.innerText=regMode?"[VOLVER]":"[REGISTRAR]";
-}
-
-async function cambiarPassLogin(){
-await sync();
-let u=prompt("Usuario:");
-if(!db.auth[u])return alert("No existe");
-if(prompt("Pass actual:")!==db.auth[u].pass)return alert("Incorrecta");
-let n=prompt("Nueva:");
-db.auth[u].pass=n;
-await sync(true);
-alert("Actualizada");
-}
-
-/* PERMISOS */
-function canEditNode(node){
-if(currentUser==="vicrocrook")return true;
-if(node===currentUser+"_caja")return true;
-if(currentUser==="kassy10"&&node==="kassy_caja")return true;
-return false;
-}
-
-/* MOV */
-async function mov(id,tipo){
-let c=document.getElementById(`c-${id}`).value.trim();
-let m=parseFloat(document.getElementById(`m-${id}`).value);
-if(!c||isNaN(m)||m<=0)return;
-await sync();
-if(!db.data[id])db.data[id]={saldo:0,logs:[]};
-db.data[id].saldo+=(tipo==="IN"?m:-m);
-db.data[id].logs.push({t:Date.now(),desc:c,val:m,type:tipo,node:id});
-await sync(true);
-renderUI();
-}
-
-async function eliminarMovimiento(node,timestamp){
-if(!canEditNode(node))return alert("Denegado");
-if(currentUser==="vicrocrook"){
-if(prompt("MASTER KEY:")!==MASTER_EDIT)return;
-}
-await sync();
-let idx=db.data[node].logs.findIndex(x=>x.t===timestamp);
-if(idx<0)return;
-let mov=db.data[node].logs[idx];
-db.data[node].saldo-=(mov.type==="IN"?mov.val:-mov.val);
-db.data[node].logs.splice(idx,1);
-await sync(true);
-renderUI();
+function logout(){
+currentUser="";
+main-app.style.display="none";
+login-page.style.display="flex";
 }
 
 /* UI */
 function renderUI(){
-const container=document.getElementById("panel-controls");
-container.innerHTML="";
 let access=db.auth[currentUser].access;
+let container=document.getElementById("panel-controls");
+container.innerHTML="";
 
 if(access==="vicro"){
 container.innerHTML=`
 <div class="tabs">
 <button class="tab-btn ${vicroTab==='vicro_airtm'?'active':''}" onclick="vicroTab='vicro_airtm';renderUI()">AIRTM</button>
 <button class="tab-btn ${vicroTab==='vicro_cap'?'active':''}" onclick="vicroTab='vicro_cap';renderUI()">CAP</button>
-</div>
-`;
-renderCard(vicroTab);
-renderLogs([vicroTab]);
+</div>`;
+currentNode=vicroTab;
 }else{
-let node=(currentUser==="kassy10")?"kassy_caja":currentUser+"_caja";
-renderCard(node);
-renderLogs([node]);
+currentNode=(currentUser==="kassy10")?"kassy_caja":currentUser+"_caja";
 }
+
+renderCard(currentNode);
+renderLogs(currentNode);
 }
 
 function renderCard(id){
 if(!db.data[id])db.data[id]={saldo:0,logs:[]};
 panel-controls.innerHTML+=`
 <div class="node-card">
-<div class="amount">$${db.data[id].saldo.toLocaleString()}</div>
+<div class="amount">$${db.data[id].saldo}</div>
 <input id="c-${id}" class="hacker-input" placeholder="Concepto">
 <input id="m-${id}" type="number" class="hacker-input" placeholder="Monto">
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
 <button class="btn-hack" onclick="mov('${id}','IN')">DEP</button>
 <button class="btn-hack" style="background:var(--red);color:#fff;" onclick="mov('${id}','OUT')">GAS</button>
-</div>
-</div>
-`;
+</div>`;
 }
 
-function renderLogs(nodes){
+async function mov(id,tipo){
+let c=document.getElementById(`c-${id}`).value;
+let m=parseFloat(document.getElementById(`m-${id}`).value);
+if(!c||isNaN(m))return;
+
+await sync();
+if(!db.data[id])db.data[id]={saldo:0,logs:[]};
+db.data[id].saldo+=(tipo==="IN"?m:-m);
+db.data[id].logs.push({t:Date.now(),desc:c,val:m,type:tipo});
+await sync(true);
+renderUI();
+}
+
+function renderLogs(id){
 panel-logs.innerHTML="";
-let all=[];
-nodes.forEach(n=>{if(db.data[n])all=all.concat(db.data[n].logs);});
-all.sort((a,b)=>b.t-a.t).forEach(l=>{
+if(!db.data[id])return;
+db.data[id].logs.sort((a,b)=>b.t-a.t).forEach(l=>{
 panel-logs.innerHTML+=`
 <div class="log-row">
 <span>${l.desc}</span>
-<span style="color:${l.type==='IN'?'#0f4':'#f44'}">
-${l.type==='IN'?'+':'-'}$${l.val}
-<button class="btn-del" onclick="eliminarMovimiento('${l.node}',${l.t})">X</button>
+<span>
+${l.type==='IN'?'+':'-'}${l.val}
+<button class="btn-del" onclick="deleteLog('${id}',${l.t})">X</button>
 </span>
 </div>`;
 });
 }
 
-/* SYNC inteligente */
-setInterval(async()=>{
-if(!currentUser)return;
-const active=document.activeElement;
-if(active&&(active.tagName==="INPUT"||active.tagName==="TEXTAREA"))return;
+async function deleteLog(id,timestamp){
 await sync();
+let idx=db.data[id].logs.findIndex(x=>x.t===timestamp);
+if(idx<0)return;
+let mov=db.data[id].logs[idx];
+db.data[id].saldo-=(mov.type==="IN"?mov.val:-mov.val);
+db.data[id].logs.splice(idx,1);
+await sync(true);
 renderUI();
-},5000);
+}
+
+/* ⭐ ESTRELLAS */
+const starCanvas=document.getElementById("stars");
+const starCtx=starCanvas.getContext("2d");
+function resize(){
+starCanvas.width=window.innerWidth;
+starCanvas.height=window.innerHeight;
+matrixCanvas.width=window.innerWidth;
+matrixCanvas.height=window.innerHeight;
+}
+window.onresize=resize;
+resize();
+
+let stars=Array(120).fill().map(()=>({
+x:Math.random()*starCanvas.width,
+y:Math.random()*starCanvas.height,
+z:Math.random()*starCanvas.width
+}));
+
+function animateStars(){
+starCtx.fillStyle="rgba(0,0,0,0.2)";
+starCtx.fillRect(0,0,starCanvas.width,starCanvas.height);
+starCtx.fillStyle=getComputedStyle(document.body).getPropertyValue('--primary');
+stars.forEach(s=>{
+s.z-=2;
+if(s.z<=0)s.z=starCanvas.width;
+let sx=(s.x-starCanvas.width/2)*(starCanvas.width/s.z)+starCanvas.width/2;
+let sy=(s.y-starCanvas.height/2)*(starCanvas.width/s.z)+starCanvas.height/2;
+starCtx.beginPath();
+starCtx.arc(sx,sy,starCanvas.width/s.z,0,Math.PI*2);
+starCtx.fill();
+});
+requestAnimationFrame(animateStars);
+}
+animateStars();
+
+/* MATRIX */
+const matrixCanvas=document.getElementById("matrix");
+const matrixCtx=matrixCanvas.getContext("2d");
+const letters="01";
+const fontSize=14;
+let drops=[];
+function initMatrix(){
+let cols=Math.floor(matrixCanvas.width/fontSize);
+drops=Array(cols).fill(1);
+}
+initMatrix();
+
+function drawMatrix(){
+matrixCtx.fillStyle="rgba(0,0,0,0.05)";
+matrixCtx.fillRect(0,0,matrixCanvas.width,matrixCanvas.height);
+matrixCtx.fillStyle=getComputedStyle(document.body).getPropertyValue('--primary');
+matrixCtx.font=fontSize+"px monospace";
+for(let i=0;i<drops.length;i++){
+let text=letters[Math.floor(Math.random()*letters.length)];
+matrixCtx.fillText(text,i*fontSize,drops[i]*fontSize);
+if(drops[i]*fontSize>matrixCanvas.height&&Math.random()>0.975)
+drops[i]=0;
+drops[i]++;
+}
+requestAnimationFrame(drawMatrix);
+}
+drawMatrix();
 </script>
 
 </body>
