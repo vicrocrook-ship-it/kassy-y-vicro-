@@ -16,16 +16,14 @@
     --dim:#004400;
     --gold:#ffcc00;
 }
-body,html{
+
+body{
     margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
     background:#000;
     font-family:'Courier New',monospace;
-    overflow:hidden;
     color:var(--primary);
 }
+
 #login-page{
     position:fixed;
     inset:0;
@@ -33,13 +31,16 @@ body,html{
     justify-content:center;
     align-items:center;
 }
+
 .login-card{
     width:90%;
     max-width:380px;
-    border:1px solid var(--primary);
     padding:30px;
-    text-align:center;
+    border:1px solid var(--primary);
+    background:#000;
+    box-shadow:0 0 25px var(--primary);
 }
+
 .hacker-input{
     width:100%;
     background:transparent;
@@ -49,36 +50,45 @@ body,html{
     margin-bottom:10px;
     text-align:center;
 }
+
 .btn-hack{
     width:100%;
     background:var(--primary);
     color:#000;
     border:none;
     padding:10px;
-    cursor:pointer;
     font-weight:bold;
+    cursor:pointer;
 }
+
 #main-app{
     display:none;
-    height:100vh;
-    flex-direction:column;
-    padding:10px;
-    overflow-y:auto;
+    padding:15px;
 }
+
 .header{
     display:flex;
     justify-content:space-between;
-    padding:10px;
     border-bottom:1px solid var(--dim);
+    padding-bottom:10px;
+    margin-bottom:10px;
 }
-.panel{
-    background:var(--card);
+
+.node-card{
     border:1px solid var(--dim);
     padding:15px;
+    margin-bottom:15px;
 }
+
 .amount{
     font-size:2rem;
     margin:10px 0;
+    cursor:pointer;
+}
+
+audio{
+    width:100%;
+    margin-top:8px;
 }
 </style>
 </head>
@@ -95,7 +105,8 @@ body,html{
 <button id="btn-main" class="btn-hack" onclick="iniciarEscaneo()">ACCEDER</button>
 
 <div style="margin-top:15px;font-size:0.7rem;">
-<span onclick="toggleReg()" id="reg-text" style="color:var(--blue);cursor:pointer;">[REGISTRAR]</span>
+<span onclick="toggleReg()" id="reg-text" style="color:var(--blue);cursor:pointer;">[REGISTRAR]</span> |
+<span onclick="resetPassAdmin()" style="color:var(--gold);cursor:pointer;">[ADMIN]</span>
 </div>
 </div>
 </div>
@@ -103,154 +114,189 @@ body,html{
 <div id="main-app">
 <div class="header">
 <span id="display-user"></span>
-<span>● CORE_CONNECTED</span>
+<span id="sync-status">● CORE_CONNECTED</span>
 <button onclick="location.reload()" style="background:red;color:white;border:none;padding:5px;">SALIR</button>
+</div>
+
+<!-- 🎵 Música -->
+<div style="background:#0a0a0a;border:1px solid var(--primary);padding:10px;margin-bottom:10px;">
+<select id="track-list" onchange="changeTrack()" style="width:100%;background:#000;color:var(--primary);border:1px solid var(--dim);">
+<option value="">-- MÚSICA --</option>
+<option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
+<option value="papasito.mp3">Papasito</option>
+<option value="unanochemedellin.mp3">Una Noche en Medellín</option>
+<option value="titimepregunto.mp3">Tití Me Preguntó</option>
+</select>
+<audio controls id="main-audio"></audio>
 </div>
 
 <div id="panel-controls"></div>
 
-<div class="panel">
+<div class="node-card">
 <small>[ HISTORIAL ]</small>
-<div id="panel-logs" style="margin-top:10px;"></div>
+<div id="panel-logs"></div>
 </div>
+
 </div>
 
 <script>
-const BIN_ID = '698bb9a743b1c97be975254f';
-const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
+const BIN_ID='698bb9a743b1c97be975254f';
+const MASTER_KEY='$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
+const MASTER_ADMIN="OMEGA2026";
 
-let db = { auth:{}, data:{} };
+let db={auth:{},data:{}};
 let currentUser="";
 let regMode=false;
 
+/* ================= SYNC ================= */
 async function sync(push=false){
-    try{
-        if(push){
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
-                method:'PUT',
-                headers:{
-                    'Content-Type':'application/json',
-                    'X-Master-Key':MASTER_KEY
-                },
-                body:JSON.stringify(db)
-            });
-        }else{
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
-                headers:{
-                    'X-Master-Key':MASTER_KEY,
-                    'X-Bin-Meta':'false'
-                }
-            });
-            const data = await res.json();
-            if(data) db=data;
-        }
-    }catch(e){console.log("SYNC ERROR");}
+try{
+document.getElementById("sync-status").style.color="yellow";
+
+if(push){
+await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
+method:'PUT',
+headers:{'Content-Type':'application/json','X-Master-Key':MASTER_KEY},
+body:JSON.stringify(db)
+});
+}else{
+const res=await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,{
+headers:{'X-Master-Key':MASTER_KEY,'X-Bin-Meta':'false'}
+});
+db=await res.json();
 }
 
+document.getElementById("sync-status").style.color="var(--primary)";
+}catch(e){console.log("SYNC ERROR");}
+}
+
+/* ================= LOGIN ================= */
 async function iniciarEscaneo(){
-    await sync();
+await sync();
+const u=user.value.toLowerCase().trim();
+const p=pass.value.trim();
+if(!u||!p) return alert("Campos vacíos");
 
-    const u=document.getElementById('user').value.toLowerCase().trim();
-    const p=document.getElementById('pass').value.trim();
-
-    if(!u||!p) return alert("Campos vacíos");
-
-    if(regMode){
-        if(db.auth[u]) return alert("Usuario ya existe");
-        db.auth[u]={user:u,pass:p,active:true,last:Date.now()};
-        await sync(true);
-        alert("Registrado");
-        location.reload();
-        return;
-    }
-
-    if(db.auth[u]&&db.auth[u].pass===p){
-        currentUser=u;
-        db.auth[u].last=Date.now();
-        await sync(true);
-
-        document.getElementById('login-page').style.display='none';
-        document.getElementById('main-app').style.display='flex';
-        document.getElementById('display-user').innerText="OP: "+u.toUpperCase();
-        renderUI();
-    }else{
-        alert("Credenciales incorrectas");
-    }
+if(regMode){
+if(db.auth[u]) return alert("Usuario ya existe");
+db.auth[u]={user:u,pass:p,role:(u==='vicrocrook'?'admin':'user'),active:true,last:Date.now()};
+await sync(true);
+alert("Usuario creado");
+location.reload();
+return;
 }
 
-async function mov(id,tipo){
-    await sync();
-
-    const c=document.getElementById(`c-${id}`).value.trim();
-    const m=parseFloat(document.getElementById(`m-${id}`).value);
-
-    if(!c||isNaN(m)||m<=0) return alert("Datos inválidos");
-
-    if(!db.data[id]) db.data[id]={saldo:0,logs:[]};
-
-    db.data[id].saldo+=(tipo==='IN'?m:-m);
-
-    db.data[id].logs.push({
-        t:Date.now(),
-        desc:c.toUpperCase(),
-        val:m,
-        type:tipo,
-        op:currentUser
-    });
-
-    await sync(true);
-    renderUI();
-}
-
-function renderUI(){
-    const container=document.getElementById('panel-controls');
-    container.innerHTML="";
-
-    if(!db.data['principal']) db.data['principal']={saldo:0,logs:[]};
-
-    container.innerHTML=`
-    <div class="panel">
-        <small>[ CUENTA PRINCIPAL ]</small>
-        <div class="amount">$${db.data['principal'].saldo.toLocaleString()}</div>
-        <input type="text" id="c-principal" class="hacker-input" placeholder="CONCEPTO">
-        <input type="number" id="m-principal" class="hacker-input" placeholder="MONTO">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
-            <button class="btn-hack" onclick="mov('principal','IN')">DEP</button>
-            <button class="btn-hack" style="background:red;color:white;" onclick="mov('principal','OUT')">GAS</button>
-        </div>
-    </div>
-    `;
-
-    renderLogs();
-}
-
-function renderLogs(){
-    const box=document.getElementById('panel-logs');
-    box.innerHTML="";
-
-    let logs=db.data['principal']?.logs||[];
-    logs.sort((a,b)=>b.t-a.t).slice(0,20).forEach(l=>{
-        box.innerHTML+=`
-        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:0.7rem;">
-            <span>${l.desc}<br><small>${l.op}</small></span>
-            <span style="color:${l.type==='IN'?'#0f4':'#f44'}">
-                ${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}
-            </span>
-        </div>`;
-    });
+if(db.auth[u]&&db.auth[u].pass===p){
+if(!db.auth[u].active) return alert("Desactivado");
+currentUser=u;
+db.auth[u].last=Date.now();
+await sync(true);
+login-page.style.display='none';
+main-app.style.display='block';
+display-user.innerText="OP: "+u.toUpperCase();
+renderUI();
+}else alert("Credenciales incorrectas");
 }
 
 function toggleReg(){
-    regMode=!regMode;
-    document.getElementById('btn-main').innerText=regMode?"REGISTRAR":"ACCEDER";
-    document.getElementById('reg-text').innerText=regMode?"[VOLVER]":"[REGISTRAR]";
+regMode=!regMode;
+btn-main.innerText=regMode?"REGISTRAR":"ACCEDER";
+reg-text.innerText=regMode?"[VOLVER]":"[REGISTRAR]";
 }
 
+/* ================= ADMIN ================= */
+async function resetPassAdmin(){
+if(currentUser!=='vicrocrook') return alert("Solo admin");
+if(prompt("MASTER ADMIN KEY:")!==MASTER_ADMIN) return;
+let u=prompt("Usuario:");
+if(!db.auth[u]) return alert("No existe");
+let n=prompt("Nueva contraseña:");
+if(!n) return;
+db.auth[u].pass=n;
+await sync(true);
+alert("Actualizada");
+}
+
+/* ================= MOVIMIENTOS ================= */
+async function mov(id,tipo){
+await sync();
+let c=document.getElementById(`c-${id}`).value.trim();
+let m=parseFloat(document.getElementById(`m-${id}`).value);
+if(!c||isNaN(m)||m<=0) return;
+
+if(!db.data[id]) db.data[id]={saldo:0,logs:[]};
+db.data[id].saldo+=(tipo==='IN'?m:-m);
+db.data[id].logs.push({t:Date.now(),desc:c.toUpperCase(),val:m,type:tipo,op:currentUser,node:id});
+await sync(true);
+renderUI();
+}
+
+/* ================= RENDER ================= */
+function renderUI(){
+let container=document.getElementById("panel-controls");
+container.innerHTML="";
+
+if(currentUser==='vicrocrook'){
+renderCard("vicro_airtm","VICRO_AIRTM","var(--blue)");
+renderCard("vicro_cap","RESERVA_CAPITAL","var(--primary)");
+renderLogs(['vicro_airtm','vicro_cap']);
+}else{
+let node=currentUser+"_caja";
+renderCard(node,"CAJA_"+currentUser.toUpperCase(),"var(--pink)");
+renderLogs([node]);
+}
+}
+
+function renderCard(id,title,color){
+if(!db.data[id]) db.data[id]={saldo:0,logs:[]};
+panel-controls.innerHTML+=`
+<div class="node-card">
+<small style="color:${color}">[ ${title} ]</small>
+<div class="amount" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
+<input id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
+<input id="m-${id}" type="number" class="hacker-input" placeholder="MONTO">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+<button class="btn-hack" onclick="mov('${id}','IN')">DEP</button>
+<button class="btn-hack" style="background:red;color:white;" onclick="mov('${id}','OUT')">GAS</button>
+</div>
+</div>`;
+}
+
+function renderLogs(nodes){
+panel-logs.innerHTML="";
+let all=[];
+nodes.forEach(n=>{if(db.data[n]) all=all.concat(db.data[n].logs)});
+all.sort((a,b)=>b.t-a.t).slice(0,20).forEach(l=>{
+panel-logs.innerHTML+=`
+<div style="display:flex;justify-content:space-between;border-bottom:1px solid #222;padding:5px 0;font-size:0.7rem;">
+<span>${l.desc}<br><small>${l.op}</small></span>
+<span style="color:${l.type==='IN'?'#0f4':'#f44'}">
+${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}
+</span>
+</div>`;
+});
+}
+
+/* ================= AJUSTAR ================= */
+async function ajustar(id){
+if(prompt("MASTER KEY:")!=="2026") return;
+let v=prompt("Nuevo saldo:");
+if(!v) return;
+db.data[id].saldo=parseFloat(v);
+await sync(true);
+renderUI();
+}
+
+/* ================= MUSICA ================= */
+function changeTrack(){
+let a=document.getElementById("main-audio");
+a.src=document.getElementById("track-list").value;
+if(a.src) a.play();
+}
+
+/* ================= AUTO SYNC ================= */
 setInterval(async()=>{
-    if(currentUser){
-        await sync();
-        renderUI();
-    }
+if(currentUser){await sync();renderUI();}
 },5000);
 </script>
 
