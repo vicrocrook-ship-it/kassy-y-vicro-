@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO SYSTEM | OMEGA FINAL</title>
+    <title>VICRO SYSTEM | v35.6 MASTER</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.98);
@@ -16,17 +16,14 @@
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
         #canvas-bg { position: fixed; inset: 0; z-index: -1; }
 
-        /* Login Resaltado VICRO SYSTEM */
-        #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; }
-        .vicro-brand { position: absolute; top: 15%; font-size: 3rem; font-weight: bold; text-shadow: 0 0 20px var(--primary); letter-spacing: 10px; opacity: 0.8; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .vicro-brand { font-size: 3rem; font-weight: bold; text-shadow: 0 0 20px var(--primary); letter-spacing: 10px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         
         .login-card { text-align: center; width: 90%; max-width: 380px; border: 2px solid var(--primary); padding: 40px 30px; background: rgba(0,0,0,0.9); box-shadow: 0 0 50px var(--dim); border-radius: 10px; }
         .hacker-input { width: 100%; background: transparent; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; font-weight: bold; }
-        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-hack:hover { background: #fff; box-shadow: 0 0 20px var(--primary); }
+        .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
-        /* App Layout */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.7rem; }
         .tab-container { display: none; gap: 10px; margin: 10px 0; }
@@ -36,7 +33,7 @@
         .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 4px; border-left: 5px solid var(--primary); margin-bottom: 15px; }
         .amount { font-size: 2.8rem; font-weight: bold; margin: 10px 0; }
         .log-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding: 8px 0; font-size: 0.7rem; }
-        .del-log { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 0 5px; font-weight: bold; }
+        .del-log { color: var(--red); cursor: pointer; border: 1px solid var(--red); padding: 0 5px; }
         
         #player-vicro { background: #0a0a0a; border: 1px solid var(--primary); padding: 10px; border-radius: 8px; margin-bottom: 10px;}
         audio { width: 100%; height: 30px; filter: invert(1); margin-top: 8px; }
@@ -48,13 +45,12 @@
     <div id="login-page">
         <div class="vicro-brand">VICRO SYSTEM</div>
         <div class="login-card">
-            <h2 id="login-title" style="margin-bottom: 25px;">SECURE_ACCESS</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            <button class="btn-hack" id="btn-main" onclick="validarEntrada()">ACCEDER</button>
+            <button class="btn-hack" onclick="validarEntrada()">CONECTAR</button>
             <div style="margin-top:20px; font-size: 0.6rem; display: flex; justify-content: space-around;">
                 <span onclick="toggleReg()" id="reg-text" style="color:var(--blue); cursor:pointer;">[REGISTRAR]</span>
-                <span onclick="configAcceso()" style="color:var(--gold); cursor:pointer;">[AJUSTES/PASS]</span>
+                <span onclick="configAcceso()" style="color:var(--gold); cursor:pointer;">[AJUSTES]</span>
             </div>
         </div>
     </div>
@@ -63,7 +59,7 @@
         <div class="header">
             <span id="display-user"></span>
             <span id="sync-status">● LIVE_SYNC</span>
-            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 10px; cursor:pointer;">LOGOUT</button>
+            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 10px; cursor:pointer;">SALIR</button>
         </div>
         <div id="vicro-tabs" class="tab-container">
             <button class="tab-btn active" id="btn-airtm" onclick="switchTab('airtm')">AIRTM</button>
@@ -71,7 +67,7 @@
         </div>
         <div id="player-vicro">
             <select id="track-list" onchange="changeTrack()" style="width:100%; background:#000; color:var(--primary); border:1px solid var(--dim); padding: 5px;">
-                <option value="">-- MÚSICA (8 PISTAS) --</option>
+                <option value="">-- MÚSICA --</option>
                 <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
                 <option value="papasito.mp3">Papasito</option>
                 <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
@@ -98,21 +94,22 @@
         let db = { auth: {}, data: {} }, currentUser = "", currentTab = "airtm", regMode = false, isWriting = false;
 
         async function sync(push = false) {
+            // Si es descarga automática y estamos escribiendo, saltamos para no causar conflicto
             if (isWriting && !push) return;
+
             const headers = { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json', 'X-Bin-Meta': 'false' };
             try {
                 if (push) {
                     isWriting = true;
-                    document.getElementById('sync-status').innerText = "● GUARDANDO...";
+                    document.getElementById('sync-status').innerText = "● ENVIANDO...";
                     await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers, body: JSON.stringify(db) });
-                    setTimeout(() => { 
-                        isWriting = false; 
-                        document.getElementById('sync-status').innerText = "● LIVE_SYNC";
-                    }, 3000);
+                    setTimeout(() => { isWriting = false; document.getElementById('sync-status').innerText = "● LIVE_SYNC"; }, 2000);
                 } else {
                     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
                     const d = await res.json();
-                    if (d.auth && JSON.stringify(db.data) !== JSON.stringify(d.data)) {
+                    
+                    // Verificación profunda de cambios para forzar renderizado en Vicro
+                    if (d.data && JSON.stringify(db.data) !== JSON.stringify(d.data)) {
                         db = d;
                         if (currentUser) renderUI();
                     }
@@ -120,25 +117,26 @@
             } catch (e) { isWriting = false; }
         }
 
-        setInterval(() => { if (currentUser && !isWriting) sync(); }, 4000);
+        // Sincronización cada 3 segundos (Más rápido para tiempo real real)
+        setInterval(() => { if (currentUser && !isWriting) sync(); }, 3000);
 
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase(), p = document.getElementById('pass').value;
             await sync();
             if (regMode) {
-                if (db.auth[u]) return alert("USUARIO EXISTENTE");
+                if (db.auth[u]) return alert("EXISTE");
                 db.auth[u] = { user: u, pass: p, active: false, last: 0, access: 'vicro' };
-                await sync(true); alert("REGISTRO ENVIADO"); location.reload();
+                await sync(true); alert("SOLICITUD ENVIADA"); location.reload();
             } else if (db.auth[u] && db.auth[u].pass === p) {
-                if (!db.auth[u].active && u !== 'vicrocrook') return alert("CUENTA BLOQUEADA");
+                if (!db.auth[u].active && u !== 'vicrocrook') return alert("BLOQUEADO");
                 currentUser = u;
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 document.body.className = (u === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
-                document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
+                document.getElementById('display-user').innerText = "OPERADOR: " + u.toUpperCase();
                 if (db.auth[u].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                 renderUI();
-            } else { alert("ERROR"); }
+            } else { alert("ERROR DE ACCESO"); }
         }
 
         async function switchTab(tab) {
@@ -146,45 +144,52 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + tab).classList.add('active');
             if (tab === 'cap') document.body.classList.add('cap-active'); else document.body.classList.remove('cap-active');
-            await sync(); renderUI();
+            
+            // Forzamos sincronización al cambiar de pestaña
+            await sync();
+            renderUI();
         }
 
         function renderUI() {
-            const container = document.getElementById('panel-controls'); container.innerHTML = "";
+            const container = document.getElementById('panel-controls');
+            if (!container) return;
+            container.innerHTML = "";
             const isVicro = db.auth[currentUser].access === 'vicro';
             const node = isVicro ? (currentTab === 'airtm' ? "vicro_airtm" : "vicro_cap") : "kassy_caja";
-            renderCard(container, node, node.toUpperCase());
+            
+            if (!db.data[node]) db.data[node] = { saldo: 0, logs: [] };
+            
+            const color = (node === 'vicro_airtm') ? 'var(--blue)' : (node === 'vicro_cap' ? 'var(--gold)' : 'var(--pink)');
+            
+            container.innerHTML = `<div class="node-card" style="border-left-color:${color}">
+                <small style="color:${color}">[ ${node.toUpperCase()} ]</small>
+                <div class="amount" onclick="ajustar('${node}')">$${db.data[node].saldo.toLocaleString()}</div>
+                <input type="text" id="c-box" class="hacker-input" placeholder="CONCEPTO">
+                <input type="number" id="m-box" class="hacker-input" placeholder="MONTO">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                    <button class="btn-hack" style="background:${color}" onclick="mov('${node}','IN')">DEPÓSITO</button>
+                    <button class="btn-hack" style="background:var(--red); color:white" onclick="mov('${node}','OUT')">GASTO</button>
+                </div></div>`;
             renderLogs(node);
         }
 
-        function renderCard(parent, id, title) {
-            if (!db.data[id]) db.data[id] = { saldo: 0, logs: [] };
-            const color = (id === 'vicro_airtm') ? 'var(--blue)' : (id === 'vicro_cap' ? 'var(--gold)' : 'var(--pink)');
-            parent.innerHTML = `<div class="node-card" style="border-left-color:${color}">
-                <small style="color:${color}">[ ${title} ]</small>
-                <div class="amount" onclick="ajustar('${id}')">$${db.data[id].saldo.toLocaleString()}</div>
-                <input type="text" id="c-${id}" class="hacker-input" placeholder="CONCEPTO">
-                <input type="number" id="m-${id}" class="hacker-input" placeholder="MONTO">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
-                    <button class="btn-hack" style="background:${color}" onclick="mov('${id}','IN')">DEP</button>
-                    <button class="btn-hack" style="background:var(--red); color:white" onclick="mov('${id}','OUT')">GAS</button>
-                </div></div>`;
-        }
-
         async function mov(id, tipo) {
-            const c = document.getElementById(`c-${id}`).value, m = parseFloat(document.getElementById(`m-${id}`).value);
+            const c = document.getElementById('c-box').value, m = parseFloat(document.getElementById('m-box').value);
             if (!c || isNaN(m)) return;
             isWriting = true;
             db.data[id].saldo += (tipo === 'IN' ? m : -m);
             db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
-            renderUI(); await sync(true);
+            renderUI();
+            await sync(true);
         }
 
         function renderLogs(id) {
-            const logBox = document.getElementById('panel-logs'); logBox.innerHTML = "";
+            const logBox = document.getElementById('panel-logs');
+            if (!logBox) return;
+            logBox.innerHTML = "";
             document.getElementById('log-title').innerText = `[ HISTORIAL_${id.toUpperCase()} ]`;
             if (db.data[id] && db.data[id].logs) {
-                [...db.data[id].logs].reverse().forEach(l => {
+                [...db.data[id].logs].reverse().slice(0, 20).forEach(l => {
                     logBox.innerHTML += `<div class="log-item">
                         <span>${l.desc}<br><small>${l.op}</small></span>
                         <span><b style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</b>
@@ -195,7 +200,7 @@
         }
 
         async function borrarLinea(nodeId, logId) {
-            if (prompt("CLAVE MAESTRA:") === "2026") {
+            if (prompt("KEY:") === "2026") {
                 isWriting = true;
                 const item = db.data[nodeId].logs.find(l => l.id === logId);
                 if (item) {
@@ -208,13 +213,14 @@
 
         async function configAcceso() {
             await sync(); let u = prompt("USUARIO:").toLowerCase();
-            if (!db.auth[u] || prompt("KEY:") !== "2026") return alert("ERROR");
-            let op = prompt("1. Pass | 2. ELIMINAR");
+            if (!db.auth[u] || prompt("ADMIN_KEY:") !== "2026") return alert("ERROR");
+            let op = prompt("1. Pass | 2. ELIMINAR | 3. ACTIVAR");
             if (op === "1") { db.auth[u].pass = prompt("NUEVA:"); await sync(true); }
             else if (op === "2") { delete db.auth[u]; await sync(true); alert("BORRADO"); }
+            else if (op === "3") { db.auth[u].active = true; await sync(true); alert("ACTIVO"); }
         }
 
-        function toggleReg() { regMode = !regMode; document.getElementById('btn-main').innerText = regMode ? "SOLICITAR" : "ACCEDER"; }
+        function toggleReg() { regMode = !regMode; alert(regMode ? "MODO REGISTRO ACTIVADO" : "MODO LOGIN ACTIVADO"); }
         async function ajustar(id) { if (prompt("KEY:") === "2026") { let v = prompt("NUEVO SALDO:"); if (v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
         function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if (a.src) a.play(); }
 
@@ -232,4 +238,3 @@
     </script>
 </body>
 </html>
-
