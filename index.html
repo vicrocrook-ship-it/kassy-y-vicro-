@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO SYSTEM | v36.4 MASTER</title>
+    <title>VICRO SYSTEM | v36.5 PLATINUM</title>
     <style>
         :root {
-            --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.98);
+            --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.9);
             --red: #ff3333; --blue: #00ccff; --pink: #ff69b4; --gold: #ffcc00;
         }
         body.vicro-theme { --primary: #00ff41; --dim: #004400; }
@@ -14,24 +14,25 @@
         body.cap-active { --primary: var(--gold); --dim: #443300; }
 
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); transition: 0.5s; }
-        #canvas-bg { position: fixed; inset: 0; z-index: -1; }
+        #canvas-bg { position: fixed; inset: 0; z-index: -2; }
 
-        /* Corazón Especial Kassy */
+        /* CORAZÓN KASSY - CAPA CORREGIDA */
         #kassy-heart {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: -1; text-align: center; pointer-events: none;
+            z-index: -1; text-align: center; pointer-events: none; width: 100%;
         }
         .heart {
-            font-size: 15rem; color: rgba(255, 105, 180, 0.15);
-            animation: beat 1.5s infinite; text-shadow: 0 0 30px var(--pink);
+            font-size: 18rem; color: var(--pink); opacity: 0.2;
+            animation: beat 1.5s infinite; text-shadow: 0 0 50px var(--pink);
         }
         .heart-text {
-            position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 1.5rem; color: var(--pink); font-weight: bold; width: 200px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 2rem; color: var(--pink); font-weight: bold; text-shadow: 0 0 10px #000;
+            letter-spacing: 5px;
         }
         @keyframes beat {
-            0%, 100% { transform: scale(1); opacity: 0.1; }
-            50% { transform: scale(1.1); opacity: 0.3; }
+            0%, 100% { transform: scale(1); opacity: 0.15; }
+            50% { transform: scale(1.2); opacity: 0.35; }
         }
 
         /* Login */
@@ -42,15 +43,15 @@
         .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
         /* UI */
-        #main-app { display: none; height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; }
-        .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.75rem; }
+        #main-app { display: none; height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; position: relative; z-index: 10; }
+        .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.75rem; background: rgba(0,0,0,0.5); }
         .tab-container { display: none; gap: 10px; margin: 10px 0; }
         .tab-btn { flex: 1; padding: 12px; background: #111; border: 1px solid var(--dim); color: var(--primary); cursor: pointer; font-weight: bold; }
         .tab-btn.active { background: var(--primary); color: #000; }
-        .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 4px; border-left: 5px solid var(--primary); margin-bottom: 15px; }
+        .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 4px; border-left: 5px solid var(--primary); margin-bottom: 15px; backdrop-filter: blur(2px); }
         .amount { font-size: 3rem; font-weight: bold; margin: 10px 0; text-align: center; cursor: pointer; }
         .log-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding: 8px 0; font-size: 0.75rem; }
-        #player-vicro { background: #0a0a0a; border: 1px solid var(--primary); padding: 10px; border-radius: 8px; margin-bottom: 10px;}
+        #player-vicro { background: rgba(10,10,10,0.8); border: 1px solid var(--primary); padding: 10px; border-radius: 8px; margin-bottom: 10px;}
         audio { width: 100%; height: 35px; filter: invert(1); margin-top: 8px; }
     </style>
 </head>
@@ -155,7 +156,6 @@
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 
-                // Aplicar temas y corazón si es Kassy
                 if (u === 'kassy10') {
                     document.body.className = 'kassy-theme';
                     document.getElementById('kassy-heart').style.display = 'block';
@@ -167,7 +167,7 @@
                 document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
                 if (db.auth[u].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                 renderUI();
-            } else { alert("ERROR: Datos no coinciden con la nube."); }
+            } else { alert("ACCESO DENEGADO"); }
         }
 
         async function configAcceso() {
@@ -179,10 +179,10 @@
             if (op === "1") { 
                 db.auth[u].pass = prompt("NUEVA CLAVE:"); 
                 await sync(true); 
-                alert("ÉXITO: Clave guardada permanentemente.");
+                alert("CLAVE GUARDADA.");
             }
             else if (op === "2") { delete db.auth[u]; await sync(true); }
-            else if (op === "3") { db.auth[u].active = true; await sync(true); }
+            else if (op === "3") { if(!db.auth[u]) db.auth[u]={user:u}; db.auth[u].active = true; db.auth[u].access="vicro"; await sync(true); }
         }
 
         function switchTab(tab) {
