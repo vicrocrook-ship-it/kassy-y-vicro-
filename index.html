@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO SYSTEM | v39.3 IRONCLAD</title>
+    <title>VICRO SYSTEM | v39.4 SHIELD</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: #0a0a0a;
@@ -38,7 +39,7 @@
         
         #player-vicro { background: #050505; border: 1px solid var(--dim); padding: 10px; border-radius: 5px; margin-bottom: 10px;}
         audio { width: 100%; height: 30px; filter: invert(1); }
-        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; padding: 5px; font-family: sans-serif; }
+        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; padding: 5px; }
     </style>
 </head>
 <body>
@@ -92,6 +93,7 @@
         const BIN_ID = '698bb9a743b1c97be975254f';
         const MASTER_KEY = '$2a$10$spjxIrYFxGQiKIYND0MrkOg3V6pY4nV.R/US9pa3CWpGr3Se2vutm';
         
+        // Base de datos por defecto (solo se usa si la nube está vacía)
         let db = { 
             auth: {
                 "vicrocrook": { user: "vicrocrook", pass: "soyelmaster", active: true, access: "vicro" },
@@ -116,8 +118,11 @@
                     const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?v=${Date.now()}`, { headers });
                     const d = await res.json();
                     if (d && d.lastUpdate > localTimestamp) {
-                        db.data = d.data; db.auth = d.auth;
-                        db.lastUpdate = d.lastUpdate; localTimestamp = d.lastUpdate;
+                        // IMPORTANTE: Mezclamos los datos nuevos con los existentes para NO BORRAR NADA
+                        db.data = d.data || db.data; 
+                        db.auth = d.auth || db.auth;
+                        db.lastUpdate = d.lastUpdate; 
+                        localTimestamp = d.lastUpdate;
                         if (currentUser) renderUI();
                     }
                 }
@@ -130,10 +135,8 @@
             const u = document.getElementById('user').value.toLowerCase().trim();
             const p = document.getElementById('pass').value.trim();
             
-            // 1. Intentamos sincronizar rápido
-            try { await Promise.race([sync(), new Promise(r => setTimeout(r, 2000))]); } catch(e){}
+            await sync(); // Forzamos carga antes de entrar
 
-            // 2. Validamos
             if (db.auth[u] && db.auth[u].pass === p) {
                 currentUser = u;
                 document.getElementById('login-page').style.display = 'none';
@@ -142,25 +145,14 @@
                 document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
                 if (db.auth[u].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                 renderUI();
-                // 3. Sincronización de refuerzo ya adentro
-                sync();
             } else { 
                 alert("ERROR DE ACCESO"); 
             }
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-' + tab).classList.add('active');
-            if (tab === 'cap') document.body.classList.add('cap-active'); else document.body.classList.remove('cap-active');
-            renderUI();
-        }
-
         function renderUI() {
             const container = document.getElementById('panel-controls'); 
-            if(!container) return;
-            container.innerHTML = "";
+            if(!container) return; container.innerHTML = "";
             const isVicro = db.auth[currentUser].access === 'vicro';
             const node = isVicro ? (currentTab === 'airtm' ? "vicro_airtm" : "vicro_cap") : "kassy_caja";
             const color = (node === 'vicro_airtm') ? 'var(--blue)' : (node === 'vicro_cap' ? 'var(--gold)' : 'var(--pink)');
@@ -182,8 +174,7 @@
             if (!c || isNaN(m)) return;
             db.data[id].saldo += (tipo === 'IN' ? m : -m);
             db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
-            renderUI(); 
-            await sync(true);
+            renderUI(); await sync(true);
         }
 
         function renderLogs(id) {
@@ -222,16 +213,27 @@
             if (!db.auth[u]) return alert("NO EXISTE");
             let newP = prompt("NUEVA CLAVE:").trim();
             if (newP) {
+                // PRIMERO sincronizamos para asegurarnos de tener los saldos actuales
+                await sync(); 
+                // LUEGO cambiamos la clave sin tocar los saldos
                 db.auth[u].pass = newP;
                 await sync(true);
-                alert("EXITO. REINICIANDO.");
+                alert("CLAVE ACTUALIZADA. SALDOS PROTEGIDOS.");
                 window.location.reload(); 
             }
+        }
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + tab).classList.add('active');
+            if (tab === 'cap') document.body.classList.add('cap-active'); else document.body.classList.remove('cap-active');
+            renderUI();
         }
         function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if (a.src) a.play(); }
     </script>
 </body>
 </html>
+
 
 
 
