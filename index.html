@@ -1,65 +1,89 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO SYSTEM | v38.3 ULTIMATE</title>
+    <title>VICRO SYSTEM | v39.0 LIGHT</title>
     <style>
         :root {
-            --primary: #00ff41; --bg: #000; --card: rgba(10, 10, 10, 0.8);
+            --primary: #00ff41; --bg: #000; --card: #0a0a0a;
             --red: #ff3333; --blue: #00ccff; --pink: #ff69b4; --gold: #ffcc00;
         }
         body.vicro-theme { --primary: #00ff41; --dim: #004400; }
         body.kassy-theme { --primary: var(--pink); --dim: #440022; }
+        body.cap-active { --primary: var(--gold); --dim: #443300; }
 
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Courier New', monospace; overflow: hidden; color: var(--primary); }
-        #canvas-bg { position: fixed; inset: 0; z-index: -2; }
-
-        /* AVISO DE SINCRONIZACIÓN FORZADA */
-        #sync-overlay {
-            display: none; position: fixed; inset: 0; background: #000;
-            z-index: 9999; flex-direction: column; justify-content: center; align-items: center;
-            color: var(--primary); border: 2px solid var(--primary);
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; font-family: 'Courier New', monospace; 
+            color: var(--primary); overflow-x: hidden;
         }
 
+        /* LOGIN */
         #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .vicro-brand { font-size: 3rem; font-weight: bold; text-shadow: 0 0 20px var(--primary); letter-spacing: 5px; margin-bottom: 30px; text-align: center; }
-        .login-card { text-align: center; width: 85%; max-width: 380px; border: 1px solid var(--primary); padding: 30px; background: rgba(0,0,0,0.9); border-radius: 15px; }
-        .hacker-input { width: 100%; background: transparent; border: 1px solid var(--primary); padding: 15px; color: var(--primary); outline: none; margin-bottom: 15px; text-align: center; box-sizing: border-box; }
+        .vicro-brand { font-size: 2.5rem; font-weight: bold; text-shadow: 0 0 10px var(--primary); margin-bottom: 20px; }
+        .login-card { text-align: center; width: 85%; max-width: 350px; border: 1px solid var(--primary); padding: 25px; background: #050505; border-radius: 10px; }
+        .hacker-input { width: 100%; background: #111; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; font-size: 1rem; }
         .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; }
 
-        #main-app { display: none; height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; }
-        .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--primary); font-size: 0.7rem; }
-        .node-card { background: var(--card); border: 1px solid var(--primary); padding: 20px; border-radius: 10px; margin-top: 15px; backdrop-filter: blur(10px); }
-        .amount { font-size: 3rem; font-weight: bold; margin: 10px 0; text-align: center; }
-        audio { width: 100%; height: 30px; filter: invert(1); margin-top: 10px; }
+        /* APP */
+        #main-app { display: none; min-height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.8rem; margin-bottom: 10px; }
+        
+        .tab-container { display: flex; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 12px; background: #111; border: 1px solid var(--dim); color: var(--primary); cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: var(--primary); color: #000; }
+        
+        .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); margin-bottom: 15px; }
+        .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; text-align: center; color: #fff; }
+        .log-item { display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding: 6px 0; font-size: 0.7rem; }
+        
+        #player-vicro { background: #050505; border: 1px solid var(--dim); padding: 10px; border-radius: 5px; margin-bottom: 10px;}
+        audio { width: 100%; height: 30px; filter: invert(1); }
     </style>
 </head>
 <body>
-    <canvas id="canvas-bg"></canvas>
-
-    <div id="sync-overlay">
-        <h2 id="sync-msg">ACTUALIZANDO NUBE...</h2>
-    </div>
 
     <div id="login-page">
         <div class="vicro-brand">VICRO SYSTEM</div>
         <div class="login-card">
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
             <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
-            <button class="btn-hack" onclick="validarEntrada()">CONECTAR</button>
-            <div onclick="configAcceso()" style="margin-top:20px; font-size: 0.6rem; color:var(--gold); cursor:pointer;">[ AJUSTES CRÍTICOS ]</div>
+            <button class="btn-hack" onclick="validarEntrada()">ENTRAR</button>
+            <div onclick="configAcceso()" style="margin-top:20px; font-size: 0.6rem; color:var(--gold); cursor:pointer;">[ CONFIG ]</div>
         </div>
     </div>
 
     <div id="main-app">
         <div class="header">
             <span id="display-user"></span>
-            <span id="sync-status">● EN LÍNEA</span>
-            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:2px 8px;">LOGOUT</button>
+            <span id="sync-status">● CONECTADO</span>
+            <button onclick="location.reload()" style="background:var(--red); color:white; border:none; padding:4px 8px;">SALIR</button>
         </div>
+
+        <div id="vicro-tabs" class="tab-container" style="display:none;">
+            <button class="tab-btn active" id="btn-airtm" onclick="switchTab('airtm')">AIRTM</button>
+            <button class="tab-btn" id="btn-cap" onclick="switchTab('cap')">CAPITAL</button>
+        </div>
+
+        <div id="player-vicro">
+            <select id="track-list" onchange="changeTrack()" style="width:100%; background:#000; color:var(--primary); border:none; margin-bottom:5px;">
+                <option value="">-- MÚSICA --</option>
+                <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
+                <option value="papasito.mp3">Papasito</option>
+                <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
+                <option value="titimepregunto.mp3">Tití Me Preguntó</option>
+            </select>
+            <audio controls id="main-audio"></audio>
+        </div>
+
         <div id="panel-controls"></div>
-        <div class="node-card"><small>[ HISTORIAL ]</small><div id="panel-logs" style="max-height: 150px; overflow-y: auto; font-size: 0.7rem;"></div></div>
+        
+        <div class="node-card">
+            <small id="log-title">[ LOGS ]</small>
+            <div id="panel-logs"></div>
+        </div>
     </div>
 
     <script>
@@ -75,29 +99,23 @@
             lastUpdate: 0 
         };
 
-        let currentUser = ""; let localTimestamp = 0; let syncLock = false;
+        let currentUser = ""; let currentTab = "airtm"; let localTimestamp = 0; let syncLock = false;
 
         async function sync(push = false) {
             if(syncLock && !push) return;
             const headers = { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json', 'X-Bin-Meta': 'false' };
-            // El ?v=${Date.now()} obliga al navegador a saltarse la caché
-            const url = `https://api.jsonbin.io/v3/b/${BIN_ID}${push ? '' : '/latest?v=' + Date.now()}`;
-
             try {
                 if (push) {
-                    syncLock = true;
-                    db.lastUpdate = Date.now();
-                    const res = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(db) });
-                    if(res.ok) {
-                        document.getElementById('sync-overlay').style.display = 'flex';
-                        document.getElementById('sync-msg').innerText = "CAMBIO EXITOSO - REINICIANDO";
-                        setTimeout(() => { location.reload(); }, 1500);
-                    }
+                    syncLock = true; db.lastUpdate = Date.now();
+                    const r = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers, body: JSON.stringify(db) });
+                    if(r.ok) localTimestamp = db.lastUpdate;
+                    setTimeout(() => { syncLock = false; }, 2000);
                 } else {
-                    const res = await fetch(url, { headers });
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, { headers });
                     const d = await res.json();
                     if (d.lastUpdate > localTimestamp) {
-                        db = d; localTimestamp = d.lastUpdate;
+                        db.data = d.data; db.auth = d.auth;
+                        db.lastUpdate = d.lastUpdate; localTimestamp = d.lastUpdate;
                         if (currentUser) renderUI();
                     }
                 }
@@ -109,34 +127,41 @@
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase().trim();
             const p = document.getElementById('pass').value.trim();
-            document.getElementById('sync-status').innerText = "CONECTANDO...";
-            await sync(); 
+            await sync();
             if (db.auth[u] && db.auth[u].pass === p) {
                 currentUser = u;
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 document.body.className = (u === 'kassy10') ? 'kassy-theme' : 'vicro-theme';
-                document.getElementById('display-user').innerText = u.toUpperCase();
+                document.getElementById('display-user').innerText = "OP: " + u.toUpperCase();
+                if (db.auth[u].access === 'vicro') document.getElementById('vicro-tabs').style.display = 'flex';
                 renderUI();
-            } else { alert("Error: Datos incorrectos."); }
+            } else { alert("ERROR DE ACCESO"); }
         }
 
-        async function configAcceso() {
-            await sync();
-            if (prompt("KEY:") !== "2026") return;
-            let u = prompt("USER (kassy10 o vicrocrook):").toLowerCase().trim();
-            let newP = prompt("NUEVA CONTRASEÑA:").trim();
-            if(u && newP && db.auth[u]) {
-                db.auth[u].pass = newP;
-                await sync(true); 
-            }
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + tab).classList.add('active');
+            if (tab === 'cap') document.body.classList.add('cap-active'); else document.body.classList.remove('cap-active');
+            renderUI();
         }
 
         function renderUI() {
             const container = document.getElementById('panel-controls'); container.innerHTML = "";
-            const node = (currentUser === 'kassy10') ? "kassy_caja" : "vicro_airtm";
-            const color = (currentUser === 'kassy10') ? 'var(--pink)' : 'var(--blue)';
-            container.innerHTML = `<div class="node-card" style="border-top: 4px solid ${color}"><small>${node.toUpperCase()}</small><div class="amount">$${db.data[node].saldo.toLocaleString()}</div><input type="text" id="c-box" class="hacker-input" placeholder="Concepto"><input type="number" id="m-box" class="hacker-input" placeholder="Monto $"><button class="btn-hack" style="background:${color}" onclick="mov('${node}','IN')">REGISTRAR</button></div>`;
+            const isVicro = db.auth[currentUser].access === 'vicro';
+            const node = isVicro ? (currentTab === 'airtm' ? "vicro_airtm" : "vicro_cap") : "kassy_caja";
+            const color = (node === 'vicro_airtm') ? 'var(--blue)' : (node === 'vicro_cap' ? 'var(--gold)' : 'var(--pink)');
+            
+            container.innerHTML = `<div class="node-card" style="border-left-color:${color}">
+                <small style="color:${color}">[ ${node.toUpperCase()} ]</small>
+                <div class="amount" onclick="ajustar('${node}')">$${db.data[node].saldo.toLocaleString()}</div>
+                <input type="text" id="c-box" class="hacker-input" placeholder="CONCEPTO">
+                <input type="number" id="m-box" class="hacker-input" placeholder="MONTO $">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                    <button class="btn-hack" style="background:${color}" onclick="mov('${node}','IN')">DEPÓSITO</button>
+                    <button class="btn-hack" style="background:var(--red); color:white" onclick="mov('${node}','OUT')">GASTO</button>
+                </div></div>`;
             renderLogs(node);
         }
 
@@ -144,8 +169,8 @@
             const c = document.getElementById('c-box').value, m = parseFloat(document.getElementById('m-box').value);
             if (!c || isNaN(m)) return;
             await sync();
-            db.data[id].saldo += m;
-            db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, op: currentUser });
+            db.data[id].saldo += (tipo === 'IN' ? m : -m);
+            db.data[id].logs.push({ id: Date.now(), desc: c.toUpperCase(), val: m, type: tipo, op: currentUser });
             renderUI(); await sync(true);
         }
 
@@ -153,21 +178,29 @@
             const logBox = document.getElementById('panel-logs'); logBox.innerHTML = "";
             if (db.data[id] && db.data[id].logs) {
                 [...db.data[id].logs].reverse().slice(0, 10).forEach(l => {
-                    logBox.innerHTML += `<div>${l.desc} - <b>$${l.val}</b></div>`;
+                    logBox.innerHTML += `<div class="log-item">
+                        <span>${l.desc}<br><small>${l.op}</small></span>
+                        <b style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</b>
+                    </div>`;
                 });
             }
         }
 
-        const canvas = document.getElementById('canvas-bg'), ctx = canvas.getContext('2d');
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resize; resize();
-        function anim() {
-            ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,canvas.width, canvas.height);
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary');
-            for(let i=0; i<5; i++) { ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2); }
-            requestAnimationFrame(anim);
+        async function ajustar(id) { if (prompt("KEY:") === "2026") { let v = prompt("SALDO:"); if (v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
+        async function configAcceso() {
+            if (prompt("ADMIN KEY:") !== "2026") return;
+            let u = prompt("USER:").toLowerCase().trim();
+            if (!db.auth[u]) return alert("NO EXISTE");
+            let newP = prompt("NUEVA CLAVE:").trim();
+            if (newP) {
+                db.auth[u].pass = newP;
+                alert("ACTUALIZANDO NUBE... ESPERE");
+                await sync(true);
+                alert("CONTRASEÑA CAMBIADA. REINICIANDO.");
+                window.location.replace(window.location.pathname); // Limpieza total de URL y caché
+            }
         }
-        anim();
+        function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if (a.src) a.play(); }
     </script>
 </body>
 </html>
