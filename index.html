@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO SYSTEM | v39.0 LIGHT</title>
+    <title>VICRO SYSTEM | v39.1 ELITE</title>
     <style>
         :root {
             --primary: #00ff41; --bg: #000; --card: #0a0a0a;
@@ -20,14 +20,12 @@
             color: var(--primary); overflow-x: hidden;
         }
 
-        /* LOGIN */
         #login-page { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         .vicro-brand { font-size: 2.5rem; font-weight: bold; text-shadow: 0 0 10px var(--primary); margin-bottom: 20px; }
         .login-card { text-align: center; width: 85%; max-width: 350px; border: 1px solid var(--primary); padding: 25px; background: #050505; border-radius: 10px; }
         .hacker-input { width: 100%; background: #111; border: 1px solid var(--dim); padding: 12px; color: var(--primary); outline: none; margin-bottom: 10px; text-align: center; box-sizing: border-box; font-size: 1rem; }
         .btn-hack { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-weight: bold; cursor: pointer; }
 
-        /* APP */
         #main-app { display: none; min-height: 100vh; flex-direction: column; padding: 10px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--dim); font-size: 0.8rem; margin-bottom: 10px; }
         
@@ -37,10 +35,12 @@
         
         .node-card { background: var(--card); border: 1px solid var(--dim); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary); margin-bottom: 15px; }
         .amount { font-size: 2.5rem; font-weight: bold; margin: 10px 0; text-align: center; color: #fff; }
-        .log-item { display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding: 6px 0; font-size: 0.7rem; }
+        .log-item { display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a1a; padding: 8px 0; font-size: 0.75rem; align-items: center; }
         
         #player-vicro { background: #050505; border: 1px solid var(--dim); padding: 10px; border-radius: 5px; margin-bottom: 10px;}
         audio { width: 100%; height: 30px; filter: invert(1); }
+        .del-btn { color: var(--red); cursor: pointer; font-weight: bold; margin-left: 10px; padding: 5px; border: 1px solid transparent; }
+        .del-btn:hover { border-color: var(--red); }
     </style>
 </head>
 <body>
@@ -69,11 +69,15 @@
 
         <div id="player-vicro">
             <select id="track-list" onchange="changeTrack()" style="width:100%; background:#000; color:var(--primary); border:none; margin-bottom:5px;">
-                <option value="">-- MÚSICA --</option>
+                <option value="">-- MÚSICA (8 TRACKS) --</option>
                 <option value="antestehubieraconocido.mp3">Si Antes Te Hubiera Conocido</option>
                 <option value="papasito.mp3">Papasito</option>
                 <option value="unanochemedellin.mp3">Una Noche en Medellín</option>
                 <option value="titimepregunto.mp3">Tití Me Preguntó</option>
+                <option value="xclana.mp3">X Clana</option>
+                <option value="vamospapr.mp3">Vamos pa PR</option>
+                <option value="debitirarmasfotos.mp3">Debí Tirar Más Fotos</option>
+                <option value="vitamina.mp3">Vitamina</option>
             </select>
             <audio controls id="main-audio"></audio>
         </div>
@@ -82,7 +86,7 @@
         
         <div class="node-card">
             <small id="log-title">[ LOGS ]</small>
-            <div id="panel-logs"></div>
+            <div id="panel-logs" style="max-height: 250px; overflow-y: auto;"></div>
         </div>
     </div>
 
@@ -111,7 +115,7 @@
                     if(r.ok) localTimestamp = db.lastUpdate;
                     setTimeout(() => { syncLock = false; }, 2000);
                 } else {
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?nocache=${Date.now()}`, { headers });
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?v=${Date.now()}`, { headers });
                     const d = await res.json();
                     if (d.lastUpdate > localTimestamp) {
                         db.data = d.data; db.auth = d.auth;
@@ -127,6 +131,7 @@
         async function validarEntrada() {
             const u = document.getElementById('user').value.toLowerCase().trim();
             const p = document.getElementById('pass').value.trim();
+            document.getElementById('sync-status').innerText = "SINCRONIZANDO...";
             await sync();
             if (db.auth[u] && db.auth[u].pass === p) {
                 currentUser = u;
@@ -177,16 +182,33 @@
         function renderLogs(id) {
             const logBox = document.getElementById('panel-logs'); logBox.innerHTML = "";
             if (db.data[id] && db.data[id].logs) {
-                [...db.data[id].logs].reverse().slice(0, 10).forEach(l => {
+                [...db.data[id].logs].reverse().slice(0, 20).forEach(l => {
                     logBox.innerHTML += `<div class="log-item">
                         <span>${l.desc}<br><small>${l.op}</small></span>
-                        <b style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</b>
+                        <span>
+                            <b style="color:${l.type==='IN'?'#0f4':'#f44'}">${l.type==='IN'?'+':'-'}$${l.val.toLocaleString()}</b>
+                            <span class="del-btn" onclick="borrarLinea('${id}', ${l.id})">X</span>
+                        </span>
                     </div>`;
                 });
             }
         }
 
+        async function borrarLinea(nodeId, logId) {
+            if (prompt("KEY PARA BORRAR:") === "2026") {
+                await sync();
+                const itemIndex = db.data[nodeId].logs.findIndex(l => l.id === logId);
+                if (itemIndex > -1) {
+                    const item = db.data[nodeId].logs[itemIndex];
+                    db.data[nodeId].saldo += (item.type === 'OUT' ? item.val : -item.val);
+                    db.data[nodeId].logs.splice(itemIndex, 1);
+                    renderUI(); await sync(true);
+                }
+            }
+        }
+
         async function ajustar(id) { if (prompt("KEY:") === "2026") { let v = prompt("SALDO:"); if (v) { db.data[id].saldo = parseFloat(v); await sync(true); renderUI(); } } }
+        
         async function configAcceso() {
             if (prompt("ADMIN KEY:") !== "2026") return;
             let u = prompt("USER:").toLowerCase().trim();
@@ -194,10 +216,10 @@
             let newP = prompt("NUEVA CLAVE:").trim();
             if (newP) {
                 db.auth[u].pass = newP;
-                alert("ACTUALIZANDO NUBE... ESPERE");
+                alert("ACTUALIZANDO NUBE...");
                 await sync(true);
-                alert("CONTRASEÑA CAMBIADA. REINICIANDO.");
-                window.location.replace(window.location.pathname); // Limpieza total de URL y caché
+                alert("CAMBIO EXITOSO. EL SISTEMA SE REINICIARÁ.");
+                window.location.reload(); 
             }
         }
         function changeTrack() { const a = document.getElementById('main-audio'); a.src = document.getElementById('track-list').value; if (a.src) a.play(); }
